@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { detectHeaderRow } from './headerDetector';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
+import { detectHeaderRow } from '../headerDetection/headerDetector';
 
 export type FileStatus = 'pending' | 'queued' | 'detecting' | 'confirming_header' | 'mapping' | 'validating' | 'completed' | 'error';
 
@@ -10,6 +12,7 @@ export interface FileState {
   headerConfidence?: number;
   sampleRows?: any[][];
   headerRowIndex?: number;
+  isPivoted?: boolean;
 }
 
 export const useFilePipeline = () => {
@@ -28,24 +31,112 @@ export const useFilePipeline = () => {
     setSelectedFiles(prev => prev.filter(f => f.file.name !== fileName));
   };
 
+  const parseFile = async (file: File, rowCount: number = 50): Promise<any[][]> => {
+    return new Promise((resolve, reject) => {
+      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+      if (isExcel) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target?.result as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+            // Map undefined to null to match python behavior if needed, but the heuristic handles undefined
+            resolve(json.slice(0, rowCount) as any[][]);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      } else {
+        Papa.parse(file, {
+          preview: rowCount,
+          skipEmptyLines: true,
+          complete: (results) => {
+            resolve(results.data as any[][]);
+          },
+          error: (error) => {
+            reject(error);
+          }
+        });
+      }
+    });
+  };
+
+  const processNextInQueue = async (fileState: FileState) => {
+    try {
+      let limit = 40;
+      const step = 40;
+      const maxLimit = 200;
+      let sampleRows: any[][] = [];
+      let detectionResult = {
+        detected_headers: [] as string[],
+        confidence_score: 0,
+        sample_rows: [] as any[][],
+        header_row_index: -1,
+        is_pivoted: false
+      };
+
+      while (limit <= maxLimit) {
+        sampleRows = await parseFile(fileState.file, limit);
+        const reachedEOF = sampleRows.length < limit;
+
+        detectionResult = detectHeaderRow(sampleRows);
+
+        if (detectionResult.confidence_score >= 50 || reachedEOF) {
+          break;
+        }
+
+        limit += step;
+      }
+
+      if (!detectionResult.detected_headers || detectionResult.detected_headers.length === 0) {
+        setSelectedFiles(current => current.map(f => 
+          f.file.name === fileState.file.name 
+            ? { ...f, status: 'error' } 
+            : f
+        ));
+        setTimeout(triggerNextInQueue, 50);
+        return;
+      }
+
+      setSelectedFiles(current => 
+        current.map(f => f.file.name === fileState.file.name 
+          ? { 
+              ...f, 
+              status: 'confirming_header', 
+              sourceHeaders: detectionResult.detected_headers, 
+              headerConfidence: detectionResult.confidence_score, 
+              sampleRows: detectionResult.sample_rows, 
+              headerRowIndex: detectionResult.header_row_index,
+              isPivoted: detectionResult.is_pivoted
+            } 
+          : f
+        )
+      );
+
+    } catch (err) {
+      console.error('Processing error:', err);
+      setSelectedFiles(current => current.map(f => f.file.name === fileState.file.name ? { ...f, status: 'error' } : f));
+    }
+
+    setTimeout(triggerNextInQueue, 50);
+  };
+
   const triggerNextInQueue = () => {
     setSelectedFiles(prev => {
-      // Wait if there's already a file being mapped or detected
-      if (prev.some(f => f.status === 'mapping' || f.status === 'confirming_header' || f.status === 'detecting')) return prev;
+      // If there is already a file being processed or waiting for user interaction, do not trigger the next
+      if (prev.some(f => f.status === 'mapping' || f.status === 'confirming_header' || f.status === 'detecting')) {
+        return prev;
+      }
 
       const nextFile = prev.find(f => f.status === 'queued');
       if (nextFile) {
-        // Kick off async detection
-        detectHeaderRow(nextFile.file).then(result => {
-          setSelectedFiles(current => 
-            current.map(f => f.file.name === nextFile.file.name 
-              ? { ...f, status: 'confirming_header', sourceHeaders: result.headers, headerConfidence: result.confidenceScore, sampleRows: result.sampleRows, headerRowIndex: result.headerRowIndex } 
-              : f
-            )
-          );
-        });
-        
-        // Transition to detecting state to prevent race conditions
+        // We use a timeout to avoid changing state while returning prev, we let the effect run asynchronously
+        setTimeout(() => processNextInQueue(nextFile), 0);
         return prev.map(f => f.file.name === nextFile.file.name ? { ...f, status: 'detecting' } : f);
       }
       return prev;
@@ -58,25 +149,29 @@ export const useFilePipeline = () => {
   };
 
   const confirmMapping = async (fileName: string) => {
-    // User finished mapping, move to validating
     setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'validating' } : f));
-
-    // Mock validation process
     await new Promise(r => setTimeout(r, 1500));
-
     setSelectedFiles(prev => prev.map(f => {
       if (f.file.name === fileName) {
         return { ...f, status: f.file.name.includes('Negative') ? 'error' : 'completed' };
       }
       return f;
     }));
-
-    // Trigger the next file in the queue
     setTimeout(triggerNextInQueue, 500);
   };
 
   const confirmHeader = (fileName: string, finalHeaders: string[]) => {
-    setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'mapping', sourceHeaders: finalHeaders } : f));
+    setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'validating', sourceHeaders: finalHeaders } : f));
+    
+    setTimeout(() => {
+      setSelectedFiles(prev => prev.map(f => {
+        if (f.file.name === fileName) {
+          return { ...f, status: f.file.name.includes('Negative') ? 'error' : 'completed' };
+        }
+        return f;
+      }));
+      setTimeout(triggerNextInQueue, 500);
+    }, 1000);
   };
 
   return {

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx');
 
-const testDataDir = path.join(__dirname, 'test_data');
+const testDataDir = path.join(__dirname, '..', 'test_data');
 
 if (!fs.existsSync(testDataDir)) {
   fs.mkdirSync(testDataDir);

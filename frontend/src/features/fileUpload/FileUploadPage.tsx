@@ -2,7 +2,7 @@ import React from 'react';
 import FileUploader from './FileUploader';
 import FileMetadataCard from './FileMetadataCard';
 import { MappingReviewUI } from '../mappingReview/MappingReviewUI';
-import { HeaderConfirmationUI } from './HeaderConfirmationUI';
+import { HeaderConfirmationUI } from '../headerDetection/HeaderConfirmationUI';
 import { useFilePipeline } from './useFilePipeline';
 
 export const FileUploadPage: React.FC = () => {
@@ -30,7 +30,10 @@ export const FileUploadPage: React.FC = () => {
       {activeFile && (
         <div className="right-panel">
           {fileInConfirmation ? (
-            <HeaderConfirmationUI fileState={fileInConfirmation} onConfirm={confirmHeader} />
+            <HeaderConfirmationUI 
+              fileState={fileInConfirmation} 
+              onConfirm={confirmHeader} 
+            />
           ) : fileInMapping ? (
             <MappingReviewUI fileState={fileInMapping} onConfirm={confirmMapping} />
           ) : null}
