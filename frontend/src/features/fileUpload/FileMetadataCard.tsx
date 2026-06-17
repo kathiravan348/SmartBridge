@@ -1,5 +1,6 @@
-import React, { useRef, ChangeEvent } from 'react';
+import React, { useRef, ChangeEvent, useState } from 'react';
 import { FileState, FileStatus } from './useFilePipeline';
+import './FileMetadataCard.css';
 
 interface FileMetadataCardProps {
   fileStates: FileState[];
@@ -10,6 +11,7 @@ interface FileMetadataCardProps {
 
 const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFiles, onValidate, onRemoveFile }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activePopupFile, setActivePopupFile] = useState<string | null>(null);
 
   if (!fileStates || fileStates.length === 0) return null;
 
@@ -56,18 +58,10 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
     const color = colors[status] || colors.pending;
 
     return (
-      <span style={{
-        backgroundColor: color.bg,
-        color: color.text,
-        padding: '2px 8px',
-        borderRadius: '12px',
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        marginLeft: 'auto',
-        marginRight: '1rem'
-      }}>
+      <span 
+        className="status-badge"
+        style={{ backgroundColor: color.bg, color: color.text }}
+      >
         {status}
       </span>
     );
@@ -99,24 +93,48 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
       />
 
       <div className="file-list">
-        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Selected Files ({fileStates.length})</h3>
+        <h3 className="file-list-header">Selected Files ({fileStates.length})</h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '10px' }}>
+        <div className="file-list-container">
           {fileStates.map((fs, index) => (
-            <div key={`${fs.file.name}-${index}`} className="file-info-header" style={{ padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-              <div className="file-icon" style={{ width: '40px', height: '40px' }}>
+            <div key={`${fs.file.name}-${index}`} className="file-item-card">
+              <div className="file-icon-wrapper">
                 {getFileIcon(fs.file.name)}
               </div>
-              <div className="file-details" style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+              <div className="file-details-wrapper">
+                <div className="file-info-col">
                   <div className="file-name" title={fs.file.name}>{fs.file.name}</div>
                   <div className="file-size">{formatSize(fs.file.size)}</div>
+                  {(fs.headerConfidence !== undefined || fs.keywordConfidence !== undefined) && (
+                    <div className="confidence-text" style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px' }}>
+                      {fs.headerConfidence !== undefined && (
+                        <div>
+                          <span className="confidence-label">Structural Confidence:</span> {fs.headerConfidence}%
+                          {fs.headerRowIndex !== undefined && ` (Row ${fs.headerRowIndex + 1})`}
+                          {fs.isPivoted && <span className="pivoted-warning" style={{marginLeft: '8px'}}>(Looks like Pivoted)</span>}
+                        </div>
+                      )}
+                      {fs.keywordConfidence !== undefined && (
+                        <div>
+                          <span className="confidence-label">Keyword Confidence:</span> {fs.keywordConfidence}%
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {fs.status !== 'error' && fs.sourceHeaders && fs.sourceHeaders.length > 0 && (
+                    <div 
+                      onClick={() => setActivePopupFile(fs.file.name)}
+                      className="view-headers-link"
+                    >
+                      View Headers ({fs.sourceHeaders.length})
+                    </div>
+                  )}
                 </div>
                 {getStatusBadge(fs.status)}
               </div>
               <button
                 onClick={() => onRemoveFile(fs.file.name)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}
+                className="remove-file-btn"
                 title="Remove file"
               >
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
@@ -136,6 +154,37 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
           Validate Files
         </button>
       </div>
+
+      {/* Header View Popup Modal */}
+      {activePopupFile && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setActivePopupFile(null)}
+        >
+          {(() => {
+            const fs = fileStates.find(f => f.file.name === activePopupFile);
+            if (!fs || !fs.sourceHeaders) return null;
+            return (
+              <div 
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="modal-header">
+                  <span>Detected Headers <span className="modal-header-count">({fs.sourceHeaders.length})</span></span>
+                  <button onClick={() => setActivePopupFile(null)} className="modal-close-btn">✕</button>
+                </h3>
+                <div className="headers-chip-container">
+                  {fs.sourceHeaders.map((header, i) => (
+                    <span key={i} className="header-chip">
+                      {header}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
     </div>
   );
 };

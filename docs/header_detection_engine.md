@@ -15,37 +15,42 @@ Traditional file parsers assume that the very first row (Row 1) of a file contai
 
 If a standard parser attempts to map these junk rows, the entire mapping pipeline breaks. Furthermore, relying on an English "Keyword Dictionary" to find headers fails when processing multi-language files (e.g., Spanish or German exports).
 
-## How It Works: Structural Heuristics
+## How It Works: The 4-Pillar Confidence Algorithm
 
 To solve this, the Auto-Detection Engine completely bypasses standard parsing logic and utilizes a **Structural Heuristic Scoring Algorithm**. This mathematical approach makes the engine 100% language-agnostic and fully secure (offline).
 
-### 1. Contextual Scoring Algorithm
-Instead of looking at a row in isolation, the engine analyzes a candidate row by comparing every cell inside it to the **5 cells directly below it**. It mathematically classifies every cell as a `'number'`, `'date'`, `'empty'`, or `'string'`.
+To make the system highly intuitive and easy to explain, the engine evaluates every candidate row directly across **Four Core Pillars**. These pillars mathematically sum together to generate a native **0-100% Confidence Score**.
 
-Signals are scaled down by 0.6x if there are fewer than 3 rows of data below the candidate row (Context Scaling).
+### Pillar 1: Base Density (Max 20%)
+*How much of the file's width does this row span?*
+The engine calculates the width of the row compared to the maximum width of the entire file. Sparse titles (like a single "Q3 Report" cell) score very low here, while true headers spanning the entire table receive the full 20%.
+*   **Formula:** `(Filled Cells / Max File Width) * 20%`
 
-The algorithm awards points based on structural boundaries:
+### Pillar 2: Data Boundary Signal (Max 100%)
+*Does the data structurally change from Text to Quantitative Data directly below this row?*
+This is the strongest indicator of a true header. If a row is made of Text, and the cells below it are Numbers or Dates, it is sitting on a structural boundary. Because true headers always sit directly above data, this pillar alone is capable of granting a perfect 100% confidence.
+*   **Formula:** `(Columns with Boundary / Filled Cells) * 100%`
 
-*   **A. The Data Boundary Signal (+15 points per column):** 
-    If a cell in the candidate row is a `'string'` (text), and the majority of the 5 cells below it are `'number'` or `'date'`, AND the cell directly below it is a number/date/empty, this represents a massive structural shift. Headers are text, and the data below them is usually quantitative. This is the strongest indicator of a true header row.
-*   **B. The Consistent String Signal (+5 points per column):** 
-    If a cell is a `'string'`, and the cells below it are also consistently `'string'` (or it failed the strict direct boundary test of the Data Boundary Signal), it receives a weak bonus. (e.g., Header: "City", Data: "Austin").
-*   **C. The Consistent Numeric Column Signal (+10 points per column):**
-    If the engine is checking for a pivoted header, the cell is unique, and at least 60% of the cells below it are numbers or dates, it is recognized as a valid numeric header column (e.g. Year `2021` with values below it).
-*   **D. The Density Bonus (+2 points per filled cell):** 
-    A single title cell (like "MONTHLY REPORT") gets 2 points, but a full row of 10 headers gets 20 points, ensuring dense rows beat sparse titles.
-*   **E. The 100% String Bonus (+10 points total):**
-    If every single populated cell in the candidate row evaluates strictly as a `'string'`, it receives a flat bonus. This rewards true header rows, which are typically composed entirely of text, unlike data rows that frequently mix strings, numbers, and dates.
-*   **F. The Unique Values Rule (+5 points or -5 per duplicate):**
-    Column headers are generally unique (e.g., "Name", "Email"). If all populated cells in a row are completely unique, it receives a +5 point bonus. If the row contains repeated strings, it is penalized -5 points for every duplicate.
-*   **G. The Pivoted Header Series Bonus (+25 points total):**
-    If the candidate row contains a sequence of at least 3 numbers or dates that are monotonically increasing or decreasing (e.g. 2021, 2022, 2023), it is flagged as a pivoted header and receives a massive bonus.
-*   **H. The Numeric Data Penalty (-20 points total):**
-    If the row is *not* a pivoted header series but contains any numeric cells, it receives a -20 point penalty.
-*   **I. The Pure Data Penalty (-50 points total):** 
-    If the candidate row is *not* a pivoted header series and consists mostly (>50%) of numbers or dates, it is mathematically proven to be a row of pure data. It receives a massive penalty to ensure it is never selected.
-*   **J. The Orphan Header Penalty (-50 points total):**
-    If a candidate row sits at the very end of a file or is followed only by completely empty rows, it receives a massive penalty. A valid header row must sit on top of underlying data.
+### Pillar 3: Data Consistency (Max 35%)
+*If there is no strict text-to-number boundary, is the data below it at least consistent?*
+For text-heavy tables (e.g., Header: "City" -> Data: "Austin"), there is no structural boundary. This pillar awards percentage points if the data simply remains consistent below the candidate header.
+*   **Formula:** `(Columns with Consistent Data / Filled Cells) * 35%`
+
+### Pillar 4: Header Traits (Bonus)
+*Does it look like a standard header?*
+*   **100% String Bonus (+10%):** True headers are usually 100% text, unlike data rows that mix text and numbers.
+*   **Uniqueness Bonus (+5%):** True headers rarely have duplicate column names (e.g., two "Email" columns).
+
+---
+
+### Critical Penalties (The Red Flags)
+If a row exhibits traits of being pure data, an unsupported structure, or invalid, it receives massive percentage penalties that crash its confidence score down to 0%:
+
+*   **Unsupported Pivoted Structure Penalty (-100%):** If the row is a horizontal timeline sequence (e.g. 2021, 2022, 2023), it represents a pivoted table that cannot be mapped.
+*   **Pure Data Penalty (-100%):** If >= 50% of the row is composed of numbers or dates, it is mathematically proven to be a row of pure data, not a header.
+*   **Mixed Numeric Penalty (-30%):** Headers should not contain random numbers. Any numeric presence triggers a penalty.
+*   **Orphan Header Penalty (-100%):** A valid header row must sit on top of underlying data. If it sits at the very end of a file or above completely empty rows, it is rejected.
+*   **Duplicate Penalty (-5% per duplicate):** Repeated column names indicate bad data structuring.
 
 ### 2. Real-World Example
 
@@ -61,42 +66,31 @@ Consider a messy, real-world Excel export that looks like this:
 | **6** | 1002 | Bob Jones | Sales | 95000 | 2021-03-22 |
 | **7** | 1003 | Charlie Brown | Marketing | 85000 | 2019-11-10 |
 
-Here is the detailed, column-by-column breakdown of how the algorithm mathematically evaluates the file without understanding English:
+Here is the detailed breakdown of how the 4-Pillar algorithm natively scores the file:
 
 #### **Row 1 Evaluation ("Q3 ACME Corp Financial Report")**
-*   **Density Bonus:** 1 filled cell (Col A) = **+2 points**.
-*   **100% String Bonus:** All filled cells are strings = **+10 points**.
-*   **Column A ("Q3 ACME..."):** It is a String. The next 5 cells below it in Col A are: String (Row 2), Empty (Row 3), String (Row 4), Number (Row 5), Number (Row 6). 
-    *   Result: 2 Strings vs 2 Numbers. This triggers the Consistent String Signal (**+5 points**).
-*   **Total Score: 17 points** *(Safely Ignored)*
+*   **Pillar 1 (Density):** 1 filled cell out of 5 max columns = **+4%**.
+*   **Pillar 2 (Boundary):** No quantitative data directly below = **0%**.
+*   **Pillar 3 (Consistency):** Data is not consistent below = **0%**.
+*   **Pillar 4 (Traits):** 100% strings = **+10%**.
+*   **Total Confidence: 14%** *(Fails)*
 
-#### **Row 2 Evaluation ("Generated on:" | "2023-10-01")**
-*   **Density Bonus:** 2 filled cells (Col A, Col B) = **+4 points**.
-*   **Numeric Data Penalty:** Contains a date cell (Col B) = **-20 points**.
-*   **Column A ("Generated on:"):** It is a String. The cells below it (Rows 3-7) are: Empty, String, Number, Number, Number. 
-    *   Result: 1 String vs 3 Numbers, and directly below is empty. This triggers the Data Boundary Signal (**+15 points**).
-*   **Total Score: -1 point** *(Safely Ignored)*
+#### **Row 2 Evaluation ("Generated on:" \| "2023-10-01")**
+*   **Pillar 1 (Density):** 2 filled cells out of 5 = **+8%**.
+*   **Critical Penalty:** Mixed Numeric Data (contains a date) = **-30%**.
+*   **Total Confidence: 0%** *(Fails)*
 
 #### **Row 4 Evaluation (The True Header Row)**
-*   **Density Bonus:** 5 filled cells = **+10 points**.
-*   **100% String Bonus:** All filled cells are strings = **+10 points**.
-*   **Unique Values Bonus:** All cells are unique = **+5 points**.
-*   **Column A ("Employee ID"):** String. Below it are 1001, 1002, 1003 (Numbers). 
-    *   Result: Data Boundary Signal (**+15 points**).
-*   **Column B ("Name"):** String. Below it are "Alice", "Bob", "Charlie" (Strings). 
-    *   Result: Consistent String Signal (**+5 points**).
-*   **Column C ("Department"):** String. Below it are "Engineering", "Sales", "Marketing" (Strings). 
-    *   Result: Consistent String Signal (**+5 points**).
-*   **Column D ("Salary"):** String. Below it are 120000, 95000, 85000 (Numbers). 
-    *   Result: Data Boundary Signal (**+15 points**).
-*   **Column E ("Hire Date"):** String. Below it are dates (2020, 2021, 2019). 
-    *   Result: Data Boundary Signal (**+15 points**).
-*   **Total Score: 80 points** *(Highest Score 🏆 - Officially Selected as Header)*
+*   **Pillar 1 (Density):** 5 filled cells out of 5 = **+20%**.
+*   **Pillar 2 (Boundary):** Col A, Col D, Col E transition into numbers/dates = **+60%**.
+*   **Pillar 3 (Consistency):** Col B, Col C remain consistent text = **+14%**.
+*   **Pillar 4 (Traits):** 100% strings & unique = **+15%**.
+*   **Total Confidence: 109% -> Capped at 100%** *(Highest Score 🏆 - Officially Selected as Header)*
 
 #### **Row 5 Evaluation (First Row of Data)**
-*   **Density Bonus:** 5 filled cells = **+10 points**.
-*   **Pure Data Penalty:** Out of 5 cells, 3 of them are purely quantitative (Col A: Number, Col D: Number, Col E: Date). Since more than 50% of the row is numbers/dates, it triggers the **Pure Data Penalty (-50 points)**.
-*   **Total Score: -40 points** *(Safely bypassed)*
+*   **Pillar 1 (Density):** 5 filled cells = **+20%**.
+*   **Critical Penalty:** Pure Data Row (Col A, D, E are quantitative, which is >= 50%) = **-100%**.
+*   **Total Confidence: 0%** *(Fails)*
 
 ### Multi-Language Support
 Because the engine looks for *data type boundaries* (Strings transitioning into Numbers) instead of specific words, it natively supports headers written in **any language**.
@@ -105,9 +99,11 @@ Because the engine looks for *data type boundaries* (Strings transitioning into 
 
 If a user uploads a file where the data is completely unstructured, pivoted sideways, or entirely lacking headers, the maximum score generated by the heuristic engine will naturally be low.
 
-If the highest score falls below the strict **Threshold of 50 points**, the pipeline enters an "Unpredictable File" flow during the Header Confirmation step. The user is presented with a red warning and a preview of the file's top rows. They must manually select the correct header row or type in the headers before they are allowed to proceed to the Mapping Review phase.
+If the highest confidence score generated falls below the strict **Threshold of 50%**, the pipeline enters an "Unpredictable File" flow during the Header Confirmation step. The user is presented with a red warning and a preview of the file's top rows. They must manually select the correct header row or type in the headers before they are allowed to proceed to the Mapping Review phase.
 
-Conversely, if the highest score is **>= 50 points** (and the file is not a pivoted table), the user is shown a green "High Confidence" badge and is simply asked to confirm the automatically detected headers.
+Conversely, if the highest score is **>= 50%** (and the file is not a pivoted table), the user is shown a green "High Confidence" badge and is simply asked to confirm the automatically detected headers.
+
+The cumulative percentage points from the 4 Pillars generate an unbounded Calculated Percentage (e.g. 109%). To ensure a perfect user experience, the engine clamps the final value to exactly **0-100%**.
 
 ## Two-Stage Detection & Pivoted Table Handling
 
@@ -121,5 +117,19 @@ To ensure maximum accuracy and prevent pivoted series headers (like horizontal y
    - If a row passes the horizontal monotonic years/months sequence check, it receives the Pivoted Header Series Bonus, waves the Data Penalties, and starts scoring numeric boundary columns.
    - If a pivoted row scores `>= 50` and is higher than the standard detection score, it is flagged as `is_pivoted: true`.
 3. **Rejection of Pivoted Tables**:
-   - Pivoted tables cannot be automatically processed or mapped since columns running horizontally as dynamic values (e.g. `2021`, `2022`, `2023`) are data points rather than fixed database fields.
-   - Therefore, any file flagged as `is_pivoted: true` is treated as unprocessible and rejected by default. The UI forces `isConfident = false` and displays the standard **"Unpredictable File Detected"** warning banner. The user is required to manually confirm the headers or transpose the file.
+   - Therefore, any file flagged as `is_pivoted: true` is treated as unprocessible and rejected by default. The UI forces `isConfident = false` and displays the standard **"Unpredictable File Detected (Looks like Pivoted)"** warning banner. The user is required to manually confirm the headers or transpose the file.
+
+## The Keyword Validation Layer
+
+To prevent false positives and catch edge-cases, the engine employs a completely independent **Keyword Validation Layer** that runs unconditionally *after* the structural algorithm finds its best "target row". 
+
+While structural rules are entirely responsible for picking the row, the Keyword Layer acts as a secondary supervisor to validate it against a multi-language dictionary (`possible_english_keys.json`).
+
+### Keyword Rule 1: The Pivoted Fallback Trap
+If the structural engine scores a row highly (`>= 50%`) but the standard keyword dictionary density is extremely low (`< 50%`), it indicates a potential false-positive. The Keyword Layer then executes a strict "Absolute Match" check. 
+
+If it finds at least **2 absolute dictionary keyword matches** in that row (ignoring density), it concludes the row is actually a **Pivoted Table Header** (where a few category names sit alongside horizontal data points like dates/months that diluted the standard keyword score). The engine forces `is_pivoted: true` and crashes the UI to the "Unpredictable File" error banner.
+
+### Keyword Rule 2: Structural Failure with Dictionary Matches
+If the structural engine scores a row poorly (`< 50%`) but the dictionary keyword density is high (`>= 50%`), it means the labels exist but the actual file data beneath them is messy, empty, or unpredictable. 
+The system naturally fails the file due to the low structural score, but explicitly displays both the Structural and Keyword scores side-by-side in the error banner (e.g., `Structural: 25% | Keyword: 100%`) so the user understands *why* the file was rejected despite having valid header names.

@@ -21,228 +21,168 @@ function getCellType(cell) {
   return 'string';
 }
 
-function analyzeRow(rowIndex, allRows, checkPivoted = true) {
+function analyzeRow(rowIndex, allRows, isPivotedHeader = false) {
   const row = allRows[rowIndex];
   if (!row || row.length === 0) return null;
-  
-  let score = 0;
+
+  const maxFileWidth = allRows.reduce((max, r) => Math.max(max, r.filter(c => getCellType(c) !== 'empty').length), 1);
+
   let filledCells = 0;
   let numericCells = 0;
   let stringCells = 0;
+  let duplicates = 0;
+  let dataBoundaryColumns = 0;
+  let consistentColumns = 0;
 
   const uniqueValues = new Set();
-  let duplicates = 0;
-
   const cellCounts = new Map();
-  row.forEach(cell => {
-    if (cell !== null && cell !== undefined && String(cell).trim() !== '') {
-      const key = String(cell).trim().toLowerCase();
-      cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
-    }
-  });
 
-  const numericValues = [];
-  let hasDateCell = false;
   row.forEach(cell => {
     const cType = getCellType(cell);
-    if (cType === 'number') {
-      const valNum = Number(String(cell).trim());
-      if (!isNaN(valNum)) {
-        numericValues.push(valNum);
-      }
-    } else if (cType === 'date') {
-      hasDateCell = true;
-      const valDate = Date.parse(String(cell).trim());
-      if (!isNaN(valDate)) {
-        numericValues.push(valDate);
-      }
+    if (cType !== 'empty') {
+      const cellStr = String(cell).trim().toLowerCase();
+      cellCounts.set(cellStr, (cellCounts.get(cellStr) || 0) + 1);
     }
   });
 
-  let isPivotedHeader = false;
-  if (checkPivoted && numericValues.length >= 3) {
-    let increasing = true;
-    let decreasing = true;
-    let strictlyConsecutive = true;
-
-    for (let i = 1; i < numericValues.length; i++) {
-      const diff = numericValues[i] - numericValues[i - 1];
-      if (diff > 0) {
-        decreasing = false;
-      } else if (diff < 0) {
-        increasing = false;
-      } else {
-        increasing = false;
-        decreasing = false;
-      }
-
-      if (Math.abs(diff) !== 1) {
-        strictlyConsecutive = false;
-      }
-    }
-
-    const isMonotonic = increasing || decreasing;
-
-    if (isMonotonic) {
-      const allInYearRange = numericValues.every(v => Number.isInteger(v) && v >= 1900 && v <= 2100);
-      const allInMonthRange = numericValues.every(v => Number.isInteger(v) && v >= 1 && v <= 12);
-
-      if (hasDateCell || strictlyConsecutive || allInYearRange || allInMonthRange) {
-        isPivotedHeader = true;
-      }
+  const contextRows = [];
+  for (let i = 1; i <= 5; i++) {
+    if (rowIndex + i < allRows.length) {
+      contextRows.push(allRows[rowIndex + i]);
     }
   }
 
-  const contextRows = allRows.slice(rowIndex + 1, rowIndex + 6);
   const contextScale = contextRows.length < 3 ? 0.6 : 1.0;
 
-  let densityBonus = 0;
-  let dataBoundarySignal = 0;
-  let consistentStringSignal = 0;
-  let consistentNumericSignal = 0;
-
   row.forEach((cell, colIndex) => {
-    const type = getCellType(cell);
-    if (type !== 'empty') {
-      filledCells++;
-      score += 2;
-      densityBonus += 2;
-      
+    const cType = getCellType(cell);
+
+    if (cType !== 'empty') {
+      filledCells += 1;
       const cellStr = String(cell).trim().toLowerCase();
       if (uniqueValues.has(cellStr)) {
-        duplicates++;
+        duplicates += 1;
       } else {
         uniqueValues.add(cellStr);
       }
     }
 
-    if (type === 'number' || type === 'date') {
-      numericCells++;
-
+    if (cType === 'number' || cType === 'date') {
+      numericCells += 1;
       let belowNumericOrDate = 0;
-      let belowEmpty = 0;
       let totalValidContext = 0;
 
-      contextRows.forEach(contextRow => {
+      for (const contextRow of contextRows) {
         if (colIndex < contextRow.length) {
-          totalValidContext++;
-          const belowCell = contextRow[colIndex];
-          const belowType = getCellType(belowCell);
-          if (belowType === 'number' || belowType === 'date') belowNumericOrDate++;
-          else if (belowType === 'empty') belowEmpty++;
+          totalValidContext += 1;
+          const belowType = getCellType(contextRow[colIndex]);
+          if (belowType === 'number' || belowType === 'date') {
+            belowNumericOrDate += 1;
+          }
         }
-      });
+      }
 
       if (isPivotedHeader && totalValidContext > 0 && (belowNumericOrDate / totalValidContext) >= 0.6) {
         const cellKey = String(cell).trim().toLowerCase();
-        const isCellUnique = cellCounts.get(cellKey) === 1;
-        if (isCellUnique) {
-          const pts = Math.round(10 * contextScale);
-          score += pts;
-          consistentNumericSignal += pts;
+        if (cellCounts.get(cellKey) === 1) {
+          consistentColumns += 1;
         }
       }
     }
 
-    if (type === 'string') {
-      stringCells++;
+    if (cType === 'string') {
+      stringCells += 1;
       let belowNumericOrDate = 0;
       let belowString = 0;
 
-      contextRows.forEach(contextRow => {
+      for (const contextRow of contextRows) {
         if (colIndex < contextRow.length) {
-          const belowCell = contextRow[colIndex];
-          const belowType = getCellType(belowCell);
-          if (belowType === 'number' || belowType === 'date') belowNumericOrDate++;
-          else if (belowType === 'string') belowString++;
+          const belowType = getCellType(contextRow[colIndex]);
+          if (belowType === 'number' || belowType === 'date') {
+            belowNumericOrDate += 1;
+          } else if (belowType === 'string') {
+            belowString += 1;
+          }
         }
-      });
+      }
 
-      const totalContext = belowNumericOrDate + belowString;
-      if (totalContext > 0) {
+      if (belowNumericOrDate + belowString > 0) {
         if (belowNumericOrDate > belowString) {
           const firstBelowCell = contextRows[0] && colIndex < contextRows[0].length ? contextRows[0][colIndex] : null;
           const firstBelowType = getCellType(firstBelowCell);
           if (firstBelowType === 'number' || firstBelowType === 'date' || firstBelowType === 'empty') {
-            const pts = Math.round(15 * contextScale);
-            score += pts;
-            dataBoundarySignal += pts;
+            dataBoundaryColumns += 1;
           } else {
-            const pts = Math.round(5 * contextScale);
-            score += pts;
-            consistentStringSignal += pts;
+            consistentColumns += 1;
           }
         } else if (belowString >= belowNumericOrDate) {
-          const pts = Math.round(5 * contextScale);
-          score += pts;
-          consistentStringSignal += pts;
+          consistentColumns += 1;
         }
       }
     }
   });
 
+  if (filledCells === 0) return null;
+
+  const densityScore = Math.round((filledCells / maxFileWidth) * 20);
+  const boundaryScore = Math.round((dataBoundaryColumns / filledCells) * 100 * contextScale);
+  const consistencyScore = Math.round((consistentColumns / filledCells) * 35 * contextScale);
+  const stringBonus = (stringCells === filledCells) ? 10 : 0;
+  const uniqueBonus = (filledCells > 1 && duplicates === 0) ? 5 : 0;
+  const pivotedBonus = isPivotedHeader ? 20 : 0;
+
+  let totalScore = densityScore + boundaryScore + consistencyScore + stringBonus + uniqueBonus + pivotedBonus;
+
   let pureDataPenalty = 0;
-  if (!isPivotedHeader && filledCells > 0 && numericCells / filledCells > 0.5) {
-    score -= 50;
-    pureDataPenalty = -50;
+  if (!isPivotedHeader && (numericCells / filledCells) >= 0.5) {
+    totalScore -= 100;
+    pureDataPenalty = -100;
   }
 
   let numericDataPenalty = 0;
-  if (!isPivotedHeader && numericCells > 0) {
-    score -= 20;
-    numericDataPenalty = -20;
+  if (!isPivotedHeader && numericCells > 0 && (numericCells / filledCells) < 0.5) {
+    totalScore -= 30;
+    numericDataPenalty = -30;
   }
 
-  let pivotedHeaderSeriesBonus = 0;
-  if (isPivotedHeader) {
-    score += 25;
-    pivotedHeaderSeriesBonus = 25;
-  }
-
-  let hundredPercentStringBonus = 0;
-  if (filledCells > 0 && stringCells === filledCells) {
-    score += 10;
-    hundredPercentStringBonus = 10;
-  }
-
-  let uniqueValuesRule = 0;
-  if (duplicates > 0) {
-    score -= (duplicates * 5);
-    uniqueValuesRule = -(duplicates * 5);
-  } else if (filledCells > 1 && duplicates === 0) {
-    score += 5;
-    uniqueValuesRule = 5;
+  let hasDataBelow = false;
+  for (const contextRow of contextRows) {
+    for (const c of contextRow) {
+      if (getCellType(c) !== 'empty') {
+        hasDataBelow = true;
+        break;
+      }
+    }
+    if (hasDataBelow) break;
   }
 
   let orphanHeaderPenalty = 0;
-  let hasDataBelow = false;
-  contextRows.forEach(contextRow => {
-    if (contextRow) {
-      contextRow.forEach(c => {
-        if (getCellType(c) !== 'empty') hasDataBelow = true;
-      });
-    }
-  });
+  if (!hasDataBelow) {
+    totalScore -= 100;
+    orphanHeaderPenalty = -100;
+  }
 
-  if (filledCells > 0 && !hasDataBelow) {
-    score -= 50;
-    orphanHeaderPenalty = -50;
+  let duplicatesPenalty = 0;
+  if (duplicates > 0) {
+    duplicatesPenalty = -(duplicates * 5);
+    totalScore += duplicatesPenalty;
   }
 
   return {
     "Row #": rowIndex + 1,
     "Row Preview": JSON.stringify(row).substring(0, 50),
-    "Density Bonus": densityBonus,
-    "Data Boundary Signal": dataBoundarySignal,
-    "Consistent String Signal": consistentStringSignal,
-    "Consistent Numeric Signal": consistentNumericSignal,
+    "Pillar 1: Density (%)": densityScore,
+    "Pillar 2: Boundary (%)": boundaryScore,
+    "Pillar 3: Consistency (%)": consistencyScore,
+    "Pillar 4: Traits (%)": stringBonus + uniqueBonus,
     "Pure Data Penalty": pureDataPenalty,
-    "Numeric Data Penalty": numericDataPenalty,
-    "Pivoted Series Bonus": pivotedHeaderSeriesBonus,
-    "100% String Bonus": hundredPercentStringBonus,
-    "Unique Values Rule": uniqueValuesRule,
+    "Mixed Data Penalty": numericDataPenalty,
+    "Search Booster (Pivoted)": pivotedBonus,
     "Orphan Header Penalty": orphanHeaderPenalty,
-    "TOTAL SCORE": score
+    "Duplicates Penalty": duplicatesPenalty,
+    "FILLED CELLS": filledCells,
+    "TOTAL RAW SCORE": Math.round(totalScore),
+    "NORMALIZED SCORE (%)": Math.min(100, Math.max(0, Math.round(totalScore)))
   };
 }
 
@@ -265,22 +205,21 @@ fs.readdirSync(dir).forEach(file => {
     // Determine checkPivoted:
     // Run standard scoring search (checkPivoted = false) on first 20 rows
     let bestStandardScore = -Infinity;
-    const maxScanRows = Math.min(allRows.length - 1, 20);
+    const maxScanRows = Math.min(allRows.length - 1, 200);
     for (let i = 0; i < maxScanRows; i++) {
       const res = analyzeRow(i, allRows, false);
-      if (res && res["TOTAL SCORE"] > bestStandardScore) {
-        bestStandardScore = res["TOTAL SCORE"];
+      if (res && res["TOTAL RAW SCORE"] > bestStandardScore) {
+        bestStandardScore = res["TOTAL RAW SCORE"];
       }
     }
 
     let checkPivoted = false;
     if (bestStandardScore < 50) {
-      // Run pivoted scoring search (checkPivoted = true) on first 20 rows
       let bestPivotedScore = -Infinity;
       for (let i = 0; i < maxScanRows; i++) {
         const res = analyzeRow(i, allRows, true);
-        if (res && res["TOTAL SCORE"] > bestPivotedScore) {
-          bestPivotedScore = res["TOTAL SCORE"];
+        if (res && res["TOTAL RAW SCORE"] > bestPivotedScore) {
+          bestPivotedScore = res["TOTAL RAW SCORE"];
         }
       }
       if (bestPivotedScore >= 50 && bestPivotedScore > bestStandardScore) {
@@ -288,11 +227,17 @@ fs.readdirSync(dir).forEach(file => {
       }
     }
 
-    // Evaluate up to first 20 rows with the selected checkPivoted flag
     const breakdown = [];
     for (let i = 0; i < maxScanRows; i++) {
       const res = analyzeRow(i, allRows, checkPivoted);
-      if (res) breakdown.push(res);
+      if (res) {
+        if (checkPivoted && res["Search Booster (Pivoted)"] > 0) {
+          res["Unsupported Pivoted Penalty"] = -100;
+          res["TOTAL RAW SCORE"] -= 100;
+          res["NORMALIZED SCORE (%)"] = Math.min(100, Math.max(0, res["TOTAL RAW SCORE"]));
+        }
+        breakdown.push(res);
+      }
     }
 
     // Create the Breakdown sheet

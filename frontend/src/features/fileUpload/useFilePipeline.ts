@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { detectHeaderRow } from '../headerDetection/headerDetector';
@@ -10,6 +10,8 @@ export interface FileState {
   status: FileStatus;
   sourceHeaders?: string[];
   headerConfidence?: number;
+  keywordConfidence?: number;
+  keywordBreakdown?: {name: string, score: number}[];
   sampleRows?: any[][];
   headerRowIndex?: number;
   isPivoted?: boolean;
@@ -68,35 +70,21 @@ export const useFilePipeline = () => {
 
   const processNextInQueue = async (fileState: FileState) => {
     try {
-      let limit = 40;
-      const step = 40;
-      const maxLimit = 200;
-      let sampleRows: any[][] = [];
-      let detectionResult = {
-        detected_headers: [] as string[],
-        confidence_score: 0,
-        sample_rows: [] as any[][],
-        header_row_index: -1,
-        is_pivoted: false
-      };
-
-      while (limit <= maxLimit) {
-        sampleRows = await parseFile(fileState.file, limit);
-        const reachedEOF = sampleRows.length < limit;
-
-        detectionResult = detectHeaderRow(sampleRows);
-
-        if (detectionResult.confidence_score >= 50 || reachedEOF) {
-          break;
-        }
-
-        limit += step;
-      }
+      const sampleRows = await parseFile(fileState.file, 200);
+      const detectionResult = detectHeaderRow(sampleRows);
 
       if (!detectionResult.detected_headers || detectionResult.detected_headers.length === 0) {
         setSelectedFiles(current => current.map(f => 
           f.file.name === fileState.file.name 
-            ? { ...f, status: 'error' } 
+            ? { 
+                ...f, 
+                status: 'error',
+                sourceHeaders: detectionResult.detected_headers,
+                headerConfidence: detectionResult.confidence_score,
+                keywordConfidence: detectionResult.keyword_confidence_score,
+                keywordBreakdown: detectionResult.keyword_breakdown,
+                isPivoted: detectionResult.is_pivoted
+              } 
             : f
         ));
         setTimeout(triggerNextInQueue, 50);
@@ -110,6 +98,8 @@ export const useFilePipeline = () => {
               status: 'confirming_header', 
               sourceHeaders: detectionResult.detected_headers, 
               headerConfidence: detectionResult.confidence_score, 
+              keywordConfidence: detectionResult.keyword_confidence_score,
+              keywordBreakdown: detectionResult.keyword_breakdown,
               sampleRows: detectionResult.sample_rows, 
               headerRowIndex: detectionResult.header_row_index,
               isPivoted: detectionResult.is_pivoted
@@ -161,17 +151,23 @@ export const useFilePipeline = () => {
   };
 
   const confirmHeader = (fileName: string, finalHeaders: string[]) => {
-    setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'validating', sourceHeaders: finalHeaders } : f));
-    
-    setTimeout(() => {
-      setSelectedFiles(prev => prev.map(f => {
-        if (f.file.name === fileName) {
-          return { ...f, status: f.file.name.includes('Negative') ? 'error' : 'completed' };
-        }
-        return f;
-      }));
-      setTimeout(triggerNextInQueue, 500);
-    }, 1000);
+    setSelectedFiles(prev => prev.map(f => {
+      if (f.file.name === fileName) {
+        return { ...f, status: 'completed', sourceHeaders: finalHeaders };
+      }
+      return f;
+    }));
+    setTimeout(triggerNextInQueue, 50);
+  };
+
+  const markAsError = (fileName: string) => {
+    setSelectedFiles(prev => prev.map(f => {
+      if (f.file.name === fileName) {
+        return { ...f, status: 'error' };
+      }
+      return f;
+    }));
+    setTimeout(triggerNextInQueue, 50);
   };
 
   return {
@@ -180,6 +176,7 @@ export const useFilePipeline = () => {
     handleRemoveFile,
     handleValidate,
     confirmHeader,
-    confirmMapping
+    confirmMapping,
+    markAsError
   };
 };

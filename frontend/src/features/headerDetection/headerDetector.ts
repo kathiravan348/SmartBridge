@@ -1,3 +1,10 @@
+import englishKeys from '../mappingReview/possible_english_keys.json';
+
+const knownKeywords = new Set<string>();
+Object.values(englishKeys).forEach((aliases: any) => {
+  aliases.forEach((alias: string) => knownKeywords.add(alias.toLowerCase()));
+});
+
 export type CellType = 'empty' | 'number' | 'date' | 'string';
 
 export function getCellType(val: any): CellType {
@@ -24,16 +31,18 @@ export function getCellType(val: any): CellType {
   return 'string';
 }
 
-export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPivoted: boolean = true): number {
+export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPivoted: boolean = true): { score: number, breakdown: { name: string, score: number }[] } {
   const row = allRows[rowIndex];
-  if (!row || row.length === 0) {
-    return 0;
-  }
+  if (!row || row.length === 0) return { score: 0, breakdown: [] };
 
-  let score = 0;
+  const maxFileWidth = allRows.reduce((max, r) => Math.max(max, r.filter(c => getCellType(c) !== 'empty').length), 1);
+  const breakdown: { name: string; score: number }[] = [];
+  
   let filledCells = 0;
   let numericCells = 0;
   let stringCells = 0;
+  let consistentColumns = 0;
+  let dataBoundaryColumns = 0;
 
   const uniqueValues = new Set<string>();
   let duplicates = 0;
@@ -106,10 +115,9 @@ export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPi
 
   row.forEach((cell, colIndex) => {
     const cType = getCellType(cell);
+
     if (cType !== 'empty') {
       filledCells += 1;
-      score += 2; // Density bonus
-
       const cellStr = String(cell).trim().toLowerCase();
       if (uniqueValues.has(cellStr)) {
         duplicates += 1;
@@ -120,10 +128,7 @@ export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPi
 
     if (cType === 'number' || cType === 'date') {
       numericCells += 1;
-
-      // Analyze context below for consistent numeric/date data (pivoted columns)
       let belowNumericOrDate = 0;
-      let belowEmpty = 0;
       let totalValidContext = 0;
 
       for (const contextRow of contextRows) {
@@ -132,25 +137,20 @@ export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPi
           const belowType = getCellType(contextRow[colIndex]);
           if (belowType === 'number' || belowType === 'date') {
             belowNumericOrDate += 1;
-          } else if (belowType === 'empty') {
-            belowEmpty += 1;
           }
         }
       }
 
       if (isPivotedHeader && totalValidContext > 0 && (belowNumericOrDate / totalValidContext) >= 0.6) {
         const cellKey = String(cell).trim().toLowerCase();
-        const isCellUnique = cellCounts.get(cellKey) === 1;
-        if (isCellUnique) {
-          score += Math.round(10 * contextScale); // Consistent Numeric Column Signal
+        if (cellCounts.get(cellKey) === 1) {
+          consistentColumns += 1;
         }
       }
     }
 
     if (cType === 'string') {
       stringCells += 1;
-
-      // Analyze context below
       let belowNumericOrDate = 0;
       let belowString = 0;
 
@@ -165,52 +165,59 @@ export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPi
         }
       }
 
-      const totalContext = belowNumericOrDate + belowString;
-      if (totalContext > 0) {
+      if (belowNumericOrDate + belowString > 0) {
         if (belowNumericOrDate > belowString) {
-          // Check if the cell directly below is a number/date/empty to qualify as a true boundary
           const firstBelowCell = contextRows[0] && colIndex < contextRows[0].length ? contextRows[0][colIndex] : null;
           const firstBelowType = getCellType(firstBelowCell);
           if (firstBelowType === 'number' || firstBelowType === 'date' || firstBelowType === 'empty') {
-            score += Math.round(15 * contextScale); // Data Boundary Signal
+            dataBoundaryColumns += 1;
           } else {
-            score += Math.round(5 * contextScale); // Consistent String Signal (fell back due to no direct boundary)
+            consistentColumns += 1;
           }
         } else if (belowString >= belowNumericOrDate) {
-          score += Math.round(5 * contextScale); // Consistent String Signal
+          consistentColumns += 1;
         }
       }
     }
   });
 
-  // Pure Data Penalty
-  if (!isPivotedHeader && filledCells > 0 && (numericCells / filledCells) > 0.5) {
-    score -= 50;
+  if (filledCells === 0) return { score: 0, breakdown: [] };
+
+  // Pillar 1: Base Density (Max 20%)
+  const densityScore = Math.round((filledCells / maxFileWidth) * 20);
+  if (densityScore > 0) breakdown.push({ name: `Pillar 1: Base Density (${filledCells} cells)`, score: densityScore });
+
+  // Pillar 2: Data Boundary Signal (Max 100%)
+  const boundaryScore = Math.round((dataBoundaryColumns / filledCells) * 100 * contextScale);
+  if (boundaryScore > 0) breakdown.push({ name: `Pillar 2: Data Boundary Signal (${dataBoundaryColumns} columns)`, score: boundaryScore });
+
+  // Pillar 3: Data Consistency (Max 35%)
+  const consistencyScore = Math.round((consistentColumns / filledCells) * 35 * contextScale);
+  if (consistencyScore > 0) breakdown.push({ name: `Pillar 3: Data Consistency (${consistentColumns} columns)`, score: consistencyScore });
+
+  // Pillar 4: Header Traits
+  const stringBonus = (stringCells === filledCells) ? 10 : 0;
+  if (stringBonus > 0) breakdown.push({ name: `Pillar 4: 100% String Bonus`, score: stringBonus });
+
+  const uniqueBonus = (filledCells > 1 && duplicates === 0) ? 5 : 0;
+  if (uniqueBonus > 0) breakdown.push({ name: `Pillar 4: Uniqueness Bonus`, score: uniqueBonus });
+
+  const pivotedBonus = isPivotedHeader ? 20 : 0; // Search booster, nullified later
+  if (pivotedBonus > 0) breakdown.push({ name: `Search Booster (Pivoted Series)`, score: pivotedBonus });
+
+  let totalScore = densityScore + boundaryScore + consistencyScore + stringBonus + uniqueBonus + pivotedBonus;
+
+  // Penalties
+  if (!isPivotedHeader && (numericCells / filledCells) >= 0.5) {
+    totalScore -= 100; // Pure Data Penalty
+    breakdown.push({ name: `Critical Penalty: Pure Data Row`, score: -100 });
   }
 
-  // Numeric Data Penalty: If a row contains numeric cells and is not a pivoted header series
-  if (!isPivotedHeader && numericCells > 0) {
-    score -= 20;
+  if (!isPivotedHeader && numericCells > 0 && (numericCells / filledCells) < 0.5) {
+    totalScore -= 30; // Mixed Numeric Penalty
+    breakdown.push({ name: `Critical Penalty: Mixed Numeric Data`, score: -30 });
   }
 
-  // Pivoted Header Series Bonus
-  if (isPivotedHeader) {
-    score += 25;
-  }
-
-  // 100% String Bonus
-  if (filledCells > 0 && stringCells === filledCells) {
-    score += 10;
-  }
-
-  // Unique values
-  if (duplicates > 0) {
-    score -= (duplicates * 5);
-  } else if (filledCells > 1 && duplicates === 0) {
-    score += 5;
-  }
-
-  // Orphan Header Penalty
   let hasDataBelow = false;
   for (const contextRow of contextRows) {
     for (const c of contextRow) {
@@ -222,16 +229,75 @@ export function scoreRowContextually(rowIndex: number, allRows: any[][], checkPi
     if (hasDataBelow) break;
   }
 
-  if (filledCells > 0 && !hasDataBelow) {
-    score -= 50;
+  if (!hasDataBelow) {
+    totalScore -= 100; // Orphan Header Penalty
+    breakdown.push({ name: `Critical Penalty: Orphan Header (No Data Below)`, score: -100 });
   }
 
-  return score;
+  if (duplicates > 0) {
+    const dupPenalty = duplicates * 5;
+    totalScore -= dupPenalty; // Duplicate Penalty
+    breakdown.push({ name: `Critical Penalty: Duplicated Header Names`, score: -dupPenalty });
+  }
+
+  return { score: totalScore, breakdown };
+}
+
+export function scoreRowKeywords(row: any[]): { score: number, breakdown: { name: string, score: number }[] } {
+  if (!row || row.length === 0) return { score: 0, breakdown: [] };
+  
+  let filledCells = 0;
+  let matchCount = 0;
+  
+  row.forEach(cell => {
+    const cType = getCellType(cell);
+    if (cType !== 'empty') {
+      filledCells += 1;
+      const cellStr = String(cell).trim().toLowerCase();
+      if (knownKeywords.has(cellStr)) {
+        matchCount += 1;
+      }
+    }
+  });
+
+  if (filledCells === 0) return { score: 0, breakdown: [] };
+
+  const keywordScore = Math.round((matchCount / filledCells) * 100);
+  const breakdown = [{ name: `Keyword Matches (${matchCount}/${filledCells})`, score: keywordScore }];
+
+  return { score: keywordScore, breakdown };
+}
+
+export function scoreRowKeywordsPivoted(row: any[]): { score: number, breakdown: { name: string, score: number }[] } {
+  if (!row || row.length === 0) return { score: 0, breakdown: [] };
+  
+  let matchCount = 0;
+  
+  row.forEach(cell => {
+    const cType = getCellType(cell);
+    if (cType !== 'empty') {
+      const cellStr = String(cell).trim().toLowerCase();
+      if (knownKeywords.has(cellStr)) {
+        matchCount += 1;
+      }
+    }
+  });
+
+  if (matchCount === 0) {
+    return { score: 0, breakdown: [{ name: `Pivoted Keyword Matches (0 absolute matches)`, score: 0 }] };
+  }
+
+  const keywordScore = matchCount >= 2 ? 100 : 50;
+  const breakdown = [{ name: `Pivoted Keyword Matches (${matchCount} absolute matches)`, score: keywordScore }];
+
+  return { score: keywordScore, breakdown };
 }
 
 export interface HeaderDetectionResult {
   detected_headers: string[];
   confidence_score: number;
+  keyword_confidence_score: number;
+  keyword_breakdown: { name: string, score: number }[];
   sample_rows: any[][];
   header_row_index: number;
   is_pivoted?: boolean;
@@ -241,80 +307,79 @@ export function detectHeaderRow(sampleRows: any[][]): HeaderDetectionResult {
   try {
     // Stage 1: Standard Header Detection (checkPivoted = false)
     let bestScore = -Infinity;
-    let bestRow: any[] = [];
     let bestRowIndex = -1;
+    let bestRow = null;
 
     for (let i = 0; i < sampleRows.length - 1; i++) {
-      const score = scoreRowContextually(i, sampleRows, false);
-      if (score > bestScore) {
-        bestScore = score;
+      const structRes = scoreRowContextually(i, sampleRows, false);
+      if (structRes.score > bestScore) {
+        bestScore = structRes.score;
         bestRow = sampleRows[i];
         bestRowIndex = i;
       }
     }
 
-    // If we have a confident standard header row (score >= 50), return it immediately.
-    if (bestScore >= 50 && bestRowIndex !== -1) {
-      const headers = bestRow.map((cell, index) => {
-        if (cell === null || cell === undefined || String(cell).trim() === '') {
-          return `Column_${index + 1}`;
-        }
-        return String(cell).trim();
-      });
-
-      return {
-        detected_headers: headers,
-        confidence_score: bestScore,
-        sample_rows: sampleRows,
-        header_row_index: bestRowIndex,
-        is_pivoted: false
-      };
-    }
-
     // Stage 2: Fallback Pivoted Header Detection (checkPivoted = true)
     let bestPivotedScore = -Infinity;
-    let bestPivotedRow: any[] = [];
     let bestPivotedRowIndex = -1;
+    let bestPivotedRow = null;
 
-    for (let i = 0; i < sampleRows.length - 1; i++) {
-      const score = scoreRowContextually(i, sampleRows, true);
-      if (score > bestPivotedScore) {
-        bestPivotedScore = score;
+    for (let i = 0; i < Math.min(sampleRows.length - 1, 20); i++) {
+      const structRes = scoreRowContextually(i, sampleRows, true);
+      if (structRes.score > bestPivotedScore) {
+        bestPivotedScore = structRes.score;
         bestPivotedRow = sampleRows[i];
         bestPivotedRowIndex = i;
       }
     }
 
-    // If the best pivoted score is confident (>= 50) and it is higher than the standard score (which means it got the pivoted series bonus/waiver)
-    if (bestPivotedScore >= 50 && bestPivotedScore > bestScore && bestPivotedRowIndex !== -1) {
-      const headers = bestPivotedRow.map((cell, index) => {
-        if (cell === null || cell === undefined || String(cell).trim() === '') {
-          return `Column_${index + 1}`;
-        }
-        return String(cell).trim();
-      });
+    // Determine target row based entirely on Structural score
+    let isPivoted = false;
+    let targetRowIndex = bestRowIndex;
+    let targetRow = bestRow;
+    let targetStructScore = bestScore;
 
-      return {
-        detected_headers: headers,
-        confidence_score: bestPivotedScore,
-        sample_rows: sampleRows,
-        header_row_index: bestPivotedRowIndex,
-        is_pivoted: true
-      };
+    // If the best pivoted score is confident (>= 50) and it is higher than the standard score
+    if (bestPivotedScore >= 50 && bestPivotedScore > bestScore && bestPivotedRowIndex !== -1) {
+      isPivoted = true;
+      targetRowIndex = bestPivotedRowIndex;
+      targetRow = bestPivotedRow;
+      targetStructScore = bestPivotedScore - 100; // Apply massive pivoted penalty
     }
 
-    // Fallback if no confident row is found (or pivoted check did not score >= 50), return best standard row
-    if (!bestRow || bestRow.length === 0) {
+    // Fallback if no confident row is found
+    if (!targetRow || targetRow.length === 0) {
       return {
         detected_headers: [],
         confidence_score: 0,
+        keyword_confidence_score: 0,
+        keyword_breakdown: [],
         sample_rows: sampleRows,
         header_row_index: -1,
         is_pivoted: false
       };
     }
 
-    const headers = bestRow.map((cell, index) => {
+    // Calculate baseline keywords for the selected target row
+    let targetKeywordRes = scoreRowKeywords(targetRow);
+    let finalStructScore = Math.min(100, Math.max(0, targetStructScore));
+    let finalKeywordScore = targetKeywordRes.score;
+    let keywordBreakdown = targetKeywordRes.breakdown;
+
+    // Apply Keyword Validation rules unconditionally
+    if (finalStructScore >= 50 && finalKeywordScore < 50) {
+      // Validation Rule 1: Structural success, Keyword failure. Check if it's a pivoted table.
+      const pivKwRes = scoreRowKeywordsPivoted(targetRow);
+      if (pivKwRes.score >= 50) {
+        isPivoted = true; // Marks it as pivoted, triggering UI error state
+        finalKeywordScore = pivKwRes.score;
+        keywordBreakdown = pivKwRes.breakdown;
+      }
+    } 
+    // Rule 2 is implicitly handled: if finalStructScore < 50 and finalKeywordScore >= 50,
+    // it already triggers an error state in the UI because finalStructScore < 50.
+
+    const headers = targetRow.map((cell, index) => {
       if (cell === null || cell === undefined || String(cell).trim() === '') {
         return `Column_${index + 1}`;
       }
@@ -323,16 +388,20 @@ export function detectHeaderRow(sampleRows: any[][]): HeaderDetectionResult {
 
     return {
       detected_headers: headers,
-      confidence_score: bestScore,
+      confidence_score: finalStructScore,
+      keyword_confidence_score: Math.min(100, Math.max(0, finalKeywordScore)),
+      keyword_breakdown: keywordBreakdown,
       sample_rows: sampleRows,
-      header_row_index: bestRowIndex,
-      is_pivoted: false
+      header_row_index: targetRowIndex,
+      is_pivoted: isPivoted
     };
   } catch (err) {
     console.error("Error detecting header:", err);
     return {
       detected_headers: [],
       confidence_score: 0,
+      keyword_confidence_score: 0,
+      keyword_breakdown: [],
       sample_rows: sampleRows,
       header_row_index: -1,
       is_pivoted: false

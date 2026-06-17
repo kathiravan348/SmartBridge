@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TARGET_HEADERS } from './schema';
 import { FileState } from '../fileUpload/useFilePipeline';
+import './MappingReviewUI.css';
 
 interface MappingReviewUIProps {
   fileState: FileState;
@@ -96,38 +97,38 @@ export const MappingReviewUI: React.FC<MappingReviewUIProps> = ({ fileState, onC
   const unmappedTargets = TARGET_HEADERS.filter(th => (mappings[th.id] || []).length === 0).length;
 
   return (
-    <div className="glass-panel mapping-ui-container" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', maxWidth: '900px', margin: '0 auto' }}>
-      <div className="mapping-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
+    <div className="glass-panel mapping-ui-container">
+      <div className="mapping-header">
+        <div className="mapping-title-area">
           <h2>Mapping Review</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Review and confirm column mappings for <strong>{fileState.file.name}</strong></p>
+          <p>Review and confirm column mappings for <strong>{fileState.file.name}</strong></p>
         </div>
         
-        <div style={{ display: 'flex', gap: '1.5rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--surface-border)' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{totalTargets}</div>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Total</div>
+        <div className="mapping-stats-box">
+          <div className="mapping-stat-col">
+            <div className="mapping-stat-value color-total">{totalTargets}</div>
+            <div className="mapping-stat-label">Total</div>
           </div>
-          <div style={{ width: '1px', background: 'var(--surface-border)' }}></div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#34d399' }}>{mappedTargets}</div>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Mapped</div>
+          <div className="mapping-stat-divider"></div>
+          <div className="mapping-stat-col">
+            <div className="mapping-stat-value color-mapped">{mappedTargets}</div>
+            <div className="mapping-stat-label">Mapped</div>
           </div>
-          <div style={{ width: '1px', background: 'var(--surface-border)' }}></div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#facc15' }}>{mergedTargets}</div>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Merged</div>
+          <div className="mapping-stat-divider"></div>
+          <div className="mapping-stat-col">
+            <div className="mapping-stat-value color-merged">{mergedTargets}</div>
+            <div className="mapping-stat-label">Merged</div>
           </div>
-          <div style={{ width: '1px', background: 'var(--surface-border)' }}></div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f87171' }}>{unmappedTargets}</div>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Unmapped</div>
+          <div className="mapping-stat-divider"></div>
+          <div className="mapping-stat-col">
+            <div className="mapping-stat-value color-unmapped">{unmappedTargets}</div>
+            <div className="mapping-stat-label">Unmapped</div>
           </div>
         </div>
       </div>
 
       {(fileState.headerConfidence !== undefined && fileState.headerConfidence < 40) && (
-        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.4)', padding: '1rem', borderRadius: '8px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="mapping-warning-banner">
           <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -137,13 +138,13 @@ export const MappingReviewUI: React.FC<MappingReviewUIProps> = ({ fileState, onC
         </div>
       )}
 
-      <div className="mapping-grid-container" style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="mapping-grid-container">
+        <table className="mapping-table">
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--surface-border)', color: 'var(--text-secondary)' }}>
-              <th style={{ padding: '1rem' }}>System Header (Target)</th>
-              <th style={{ padding: '1rem' }}>Confidence</th>
-              <th style={{ padding: '1rem' }}>Mapped File Headers (Source)</th>
+            <tr>
+              <th>System Header (Target)</th>
+              <th>Confidence</th>
+              <th>Mapped File Headers (Source)</th>
             </tr>
           </thead>
           <tbody>
@@ -152,30 +153,29 @@ export const MappingReviewUI: React.FC<MappingReviewUIProps> = ({ fileState, onC
               const allMappedSourcesArray = Object.values(mappings).flat();
 
               return (
-                <tr key={target.id} style={{ borderBottom: '1px solid var(--surface-border)' }}>
-                  <td style={{ padding: '1rem', fontWeight: 500 }}>
-                    <span style={{ color: 'var(--text-secondary)', marginRight: '8px' }}>{targetIndex + 1}.</span>
-                    {target.label} {target.required && <span style={{ color: 'var(--danger-color)' }}>*</span>}
+                <tr key={target.id}>
+                  <td className="mapping-target-cell">
+                    <span className="mapping-target-index">{targetIndex + 1}.</span>
+                    {target.label} {target.required && <span className="mapping-target-req">*</span>}
                   </td>
-                  <td style={{ padding: '1rem' }}>
+                  <td>
                     {getConfidenceBadge(selectedSources.length)}
                   </td>
-                  <td style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <td>
+                    <div className="mapped-sources-container">
                       {selectedSources.map(sh => (
-                        <div key={sh} style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                        <div key={sh} className="mapped-source-chip">
                           {sh}
                           <button
                             onClick={() => handleRemoveSourceHeader(target.id, sh)}
-                            style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '1rem', lineHeight: 1 }}
+                            className="mapped-source-remove"
                           >&times;</button>
                         </div>
                       ))}
                     </div>
 
                     <select
-                      className="source-select"
-                      style={{ background: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--surface-border)', padding: '0.5rem', borderRadius: '4px', width: '100%' }}
+                      className="source-select-dropdown"
                       onChange={(e) => {
                         handleAddSourceHeader(target.id, e.target.value);
                         e.target.value = ''; // Reset select
@@ -193,10 +193,7 @@ export const MappingReviewUI: React.FC<MappingReviewUIProps> = ({ fileState, onC
                             key={sh}
                             value={sh}
                             disabled={isMapped}
-                            style={{
-                              color: isMapped ? 'var(--text-secondary)' : 'var(--text-primary)',
-                              fontStyle: isMapped ? 'italic' : 'normal'
-                            }}
+                            className={isMapped ? 'source-option-disabled' : ''}
                           >
                             {sh} {isMapped ? `✓ (Mapped to ${mappedTargetIndex})` : ''}
                           </option>
@@ -211,10 +208,10 @@ export const MappingReviewUI: React.FC<MappingReviewUIProps> = ({ fileState, onC
         </table>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', padding: '1rem 0' }}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn" onClick={handleClearAll} style={{ background: 'transparent', border: '1px solid var(--surface-border)' }}>Clear All</button>
-          <button className="btn" onClick={handleResetToAI} style={{ background: 'transparent', border: '1px solid var(--surface-border)' }}>Reset to AI</button>
+      <div className="mapping-footer-actions">
+        <div className="mapping-footer-left">
+          <button className="btn btn-outline" onClick={handleClearAll}>Clear All</button>
+          <button className="btn btn-outline" onClick={handleResetToAI}>Reset to AI</button>
         </div>
         <button className="btn btn-primary" onClick={() => onConfirm(fileState.file.name)}>
           Confirm Mapping & Continue
