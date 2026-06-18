@@ -56,7 +56,6 @@ The algorithm evaluates candidates natively on a 0-100% scale using 4 pillars:
 | **Pillar 2: Data Boundary** | Up to +100% | `(Columns with Boundary / Filled Cells) * 100%`. The strongest signal; true headers sit directly above data. |
 | **Pillar 3: Data Consistency**| Up to +35% | `(Consistent Columns / Filled Cells) * 35%`. Rewards headers that sit above consistent text columns. |
 | **Pillar 4: Header Traits** | +10% to +15% | +10% if row is 100% strings. +5% if all columns are uniquely named. |
-| **Pivoted Series Bonus** | +20% | ≥ 3 monotonically increasing/decreasing numbers/dates in the row (used in Stage 2 only). |
 | **Critical: Mixed Numeric Penalty** | −30% | Row contains stray numbers but is not majority data. |
 | **Critical: Pure Data Penalty** | −100% | ≥ 50% of cells are quantitative data. |
 | **Critical: Orphan Penalty** | −100% | No data exists below the row. |
@@ -64,14 +63,14 @@ The algorithm evaluates candidates natively on a 0-100% scale using 4 pillars:
 
 ---
 
-## 4. Two-Stage Detection Pipeline with Keyword Validation
+## 4. Three-Layer Detection Pipeline
 
 | Stage | What Happens | Outcome |
 |---|---|---|
-| **Stage 1 — Standard Detection** | All rows scored with numeric penalties active (`checkPivoted = OFF`) | If best score **≥ 50** → structural header candidate found |
-| **Stage 2 — Pivoted Fallback** | Runs only if Stage 1 score < 50; numeric penalties waived for monotonic rows (`checkPivoted = ON`) | If best score **≥ 50** and beats Stage 1 → structural pivoted candidate found |
-| **Keyword Validation Layer** | Runs on the winning structural candidate. Checks dictionary matches vs structural score to find hidden pivoted tables or false positives. | Validates the score. If validation fails, forces `is_pivoted = true` or explicitly displays the mismatched scores. |
-| **No confident row found** | Both stages fail to reach 50 | Falls back to "Unpredictable File" flow |
+| **Layer 1 — Structural Detection** | All rows are scored structurally. | If best score **≥ 50** → structural header candidate found |
+| **Layer 2 — Keyword Scoring** | Runs on the winning structural candidate. Scans the contiguous block of headers until the first empty column. | Calculates a keyword match score on the contiguous block. |
+| **Layer 3 — Validation Trap** | Acts as a safety net. If Layer 2 score **< 50**, it triggers a vertical keyword scan on the first column (up to 200 rows) and requires labels to be strictly unique. | Validates the score. If vertical keyword match is >= 50% and unique, forces `is_pivoted = true`. |
+| **No confident row found** | Layer 1 fails to reach 50 | Falls back to "Unpredictable File" flow |
 
 ---
 
@@ -84,24 +83,19 @@ The algorithm evaluates candidates natively on a 0-100% scale using 4 pillars:
 | **< 50** | Unpredictable File | 🔴 Red warning · User manually selects or types the header row |
 
 - In all states the user can click **"View Scoring Details"** to see the exact signals that fired
-- When a user manually selects a row, the score **recalculates live**
+- **Live Dynamic Validation**: When a user manually selects a row, the engine recalculates the structural score and the validation trap live. The UI dynamically shifts between Green (Valid) and Red (Unpredictable) states based on the newly selected row's confidence.
+- **Origin Flags**: The UI banners clearly label whether the currently displayed row is `Auto-Generated` by the engine or a `Manual` override by the user.
 
 ---
 
-## 6. Pivoted Table Detection (Dual Method)
+## 6. Pivoted Table Detection (Validation Trap)
 
-The system detects pivoted tables through two independent methods:
+The system detects pivoted tables exclusively through the Layer 3 Validation Trap:
 
-1. **Structural Monotonic Check**:
-   - Triggered when a row has ≥ 3 numeric or date values that are **monotonically increasing or decreasing**
-   - Confirmed as pivoted if any of these is true:
-     - Values are in the year range **1900–2100**
-     - Values are in the month range **1–12**
-     - Values are **strictly consecutive** (differ by exactly 1)
-     - At least one properly formatted date cell is present
-2. **Keyword Validation Trap**:
-   - Triggered when a row has a high Structural Score (≥ 50) but a low Keyword Score (< 50).
-   - Confirmed as pivoted if the row contains **2 or more absolute keyword matches** in the dictionary (proving it's a mix of valid header categories and horizontal timeline data points).
+- **Triggered** when a row has a high Structural Score (≥ 50) but a low Contiguous Keyword Score (< 50).
+- **Confirmed as pivoted** if the first column (Column 0) contains a vertical contiguous block of labels (scanned downwards from the header row until the first empty cell, max 200 rows) where:
+  - The vertical keyword match score is **≥ 50%**.
+  - All labels in the block are **strictly unique** (no duplicates).
 
 Pivoted files are **always rejected for auto-mapping** — dynamic column values (e.g. `2021`, `2022`) are data points, not field names. The UI explicitly states `(Looks like Pivoted)` in the warning banner.
 ---
@@ -111,9 +105,8 @@ Pivoted files are **always rejected for auto-mapping** — dynamic column values
 - **Structural Over Positional Logic**: Enterprise exports often have "junk" text at the top (e.g., disclaimers, report titles). Instead of assuming the first row is the header, the 4-Pillar system uses structural heuristics to find the *true* boundary between metadata and the actual data table.
 - **The "Data Boundary" Signal (100%)**: A true header row almost always sits directly above the data it describes. If a row of text transitions into numbers or dates directly below it, this boundary shift serves as an extremely strong, language-agnostic signal.
 - **Aggressive Numeric Penalties**: Valid headers are typically strings. If a row contains numbers or dates (like "10/01/2023" or "10054"), it is likely a data row or metadata. Applying a heavy "Mixed Numeric" or "Pure Data" penalty prevents these rows from being selected.
-- **Two-Stage Pivoted Table Handling**: Pivoted tables (e.g., headers like "2021", "2022") use data points as headers. If standard detection fails, a Stage 2 check looks for monotonically increasing numeric sequences. If found, auto-mapping is blocked and the user is prompted to transpose the file to match our fixed backend schema.
 - **100% Score Capping**: A row could theoretically score above 100% if it perfectly satisfies all pillars and earns bonus points. Capping ensures the UI displays a clean, understandable 0-100% confidence badge to the user.
-- **Unconditional Keyword Validation**: After the structural engine mathematically selects the best row, a secondary Keyword Validation layer scans that specific row against a multi-language dictionary. This acts as a powerful safety net, trapping edge cases (like undetected pivoted tables or highly unstructured data that accidentally scored well) and exposing dual-scores in the UI for total transparency.
+- **Three-Layer Architecture**: The structural engine purely picks the best row. Then, the keyword scoring layer reads the contiguous block. Finally, the validation trap uses this to safely block edge cases (like pivoted tables) without complicating the base structural math.
 
 ---
 
@@ -135,7 +128,7 @@ Pivoted files are **always rejected for auto-mapping** — dynamic column values
 | Metric | Value |
 |---|---|
 | Average detection time | < 20 ms |
-| Max scoring passes | 2 (Stage 2 only runs if Stage 1 fails) |
+| Max scoring passes | 1 (Single structural pass) |
 | Network calls | 0 (fully client-side) |
 | Context rows per candidate | Up to 5 (fixed window) |
 

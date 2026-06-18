@@ -15,44 +15,57 @@ Traditional file parsers assume that the very first row (Row 1) of a file contai
 
 If a standard parser attempts to map these junk rows, the entire mapping pipeline breaks. Furthermore, relying on an English "Keyword Dictionary" to find headers fails when processing multi-language files (e.g., Spanish or German exports).
 
-## How It Works: The 4-Pillar Confidence Algorithm
+## The Three-Layer Architecture
 
-To solve this, the Auto-Detection Engine completely bypasses standard parsing logic and utilizes a **Structural Heuristic Scoring Algorithm**. This mathematical approach makes the engine 100% language-agnostic and fully secure (offline).
+To ensure high accuracy, language-agnosticism, and proper handling of edge-cases like pivoted tables, the Header Auto-Detection Engine utilizes an explicit **Three-Layer Architecture**.
 
-To make the system highly intuitive and easy to explain, the engine evaluates every candidate row directly across **Four Core Pillars**. These pillars mathematically sum together to generate a native **0-100% Confidence Score**.
+### Layer 1: Structural Detection (`calculateStructuralScore`)
 
-### Pillar 1: Base Density (Max 20%)
+The first layer completely bypasses standard parsing logic and utilizes a **Structural Heuristic Scoring Algorithm**. This mathematical approach makes the engine 100% language-agnostic and fully secure (offline). It evaluates every candidate row directly across **Four Core Pillars** to generate a native **0-100% Confidence Score**.
+
+#### Pillar 1: Base Density (Max 20%)
 *How much of the file's width does this row span?*
 The engine calculates the width of the row compared to the maximum width of the entire file. Sparse titles (like a single "Q3 Report" cell) score very low here, while true headers spanning the entire table receive the full 20%.
 *   **Formula:** `(Filled Cells / Max File Width) * 20%`
 
-### Pillar 2: Data Boundary Signal (Max 100%)
+#### Pillar 2: Data Boundary Signal (Max 100%)
 *Does the data structurally change from Text to Quantitative Data directly below this row?*
 This is the strongest indicator of a true header. If a row is made of Text, and the cells below it are Numbers or Dates, it is sitting on a structural boundary. Because true headers always sit directly above data, this pillar alone is capable of granting a perfect 100% confidence.
 *   **Formula:** `(Columns with Boundary / Filled Cells) * 100%`
 
-### Pillar 3: Data Consistency (Max 35%)
+#### Pillar 3: Data Consistency (Max 35%)
 *If there is no strict text-to-number boundary, is the data below it at least consistent?*
 For text-heavy tables (e.g., Header: "City" -> Data: "Austin"), there is no structural boundary. This pillar awards percentage points if the data simply remains consistent below the candidate header.
 *   **Formula:** `(Columns with Consistent Data / Filled Cells) * 35%`
 
-### Pillar 4: Header Traits (Bonus)
+#### Pillar 4: Header Traits (Bonus)
 *Does it look like a standard header?*
 *   **100% String Bonus (+10%):** True headers are usually 100% text, unlike data rows that mix text and numbers.
 *   **Uniqueness Bonus (+5%):** True headers rarely have duplicate column names (e.g., two "Email" columns).
 
----
-
-### Critical Penalties (The Red Flags)
-If a row exhibits traits of being pure data, an unsupported structure, or invalid, it receives massive percentage penalties that crash its confidence score down to 0%:
-
-*   **Unsupported Pivoted Structure Penalty (-100%):** If the row is a horizontal timeline sequence (e.g. 2021, 2022, 2023), it represents a pivoted table that cannot be mapped.
+#### Critical Penalties (The Red Flags)
+If a row exhibits traits of being pure data or invalid, it receives massive percentage penalties:
 *   **Pure Data Penalty (-100%):** If >= 50% of the row is composed of numbers or dates, it is mathematically proven to be a row of pure data, not a header.
 *   **Mixed Numeric Penalty (-30%):** Headers should not contain random numbers. Any numeric presence triggers a penalty.
 *   **Orphan Header Penalty (-100%):** A valid header row must sit on top of underlying data. If it sits at the very end of a file or above completely empty rows, it is rejected.
 *   **Duplicate Penalty (-5% per duplicate):** Repeated column names indicate bad data structuring.
 
-### 2. Real-World Example
+### Layer 2: Keyword Validation Layer (`calculateKeywordScore`)
+
+After the structural engine picks the best row, the **Keyword Validation Layer** runs as a secondary supervisor to validate it against a multi-language dictionary (`possible_english_keys.json`). 
+
+It performs a **Contiguous Column Scan**. The scan starts sequentially from the first column and immediately halts upon encountering the first empty column. It calculates a keyword match percentage *only* against that contiguous block of populated cells.
+
+### Layer 3: Validation Trap (`verifyFinalHeader`)
+
+The final layer acts as a safety net against false positives and pivoted tables (where labels run vertically down the first column instead of horizontally).
+
+If the **Horizontal Keyword Score (from Layer 2) is < 50%**, the system explicitly performs a **Vertical Keyword Scan**.
+It starts at the detected header row and scans downwards strictly on the **first column** (Column 0). It halts upon encountering the first empty cell in that column, or when it reaches a maximum of 200 rows.
+
+It calculates a vertical keyword score based on that block. If the vertical score is **>= 50%** AND all labels in that vertical block are strictly **unique** (no duplicates), the engine explicitly rejects the file as a **Pivoted Table** (`isPivoted = true`). The UI forces `isConfident = false` and displays the "Unpredictable File Detected (Looks like Pivoted)" error banner, explicitly surfacing the **Vertical Keyword Score** to the user.
+
+## 2. Real-World Example
 
 Consider a messy, real-world Excel export that looks like this:
 
@@ -103,33 +116,3 @@ If the highest confidence score generated falls below the strict **Threshold of 
 
 Conversely, if the highest score is **>= 50%** (and the file is not a pivoted table), the user is shown a green "High Confidence" badge and is simply asked to confirm the automatically detected headers.
 
-The cumulative percentage points from the 4 Pillars generate an unbounded Calculated Percentage (e.g. 109%). To ensure a perfect user experience, the engine clamps the final value to exactly **0-100%**.
-
-## Two-Stage Detection & Pivoted Table Handling
-
-To ensure maximum accuracy and prevent pivoted series headers (like horizontal years/months timelines) from being incorrectly accepted for standard column mapping, the engine runs a **Two-Stage Detection Pipeline**:
-
-1. **Stage 1: Standard Header Detection**:
-   - The candidate rows are scored using standard rules (`checkPivoted = false`). This enforces the Numeric Data Penalty and Pure Data Penalty on any rows with numbers.
-   - If the best row's score is `>= 50` points, it is immediately accepted as the true header row, and the file is marked as high confidence.
-2. **Stage 2: Fallback Pivoted Detection**:
-   - If standard detection is unable to predict a confident header (best score `< 50`), the engine falls back to scoring with pivoted checks enabled (`checkPivoted = true`).
-   - If a row passes the horizontal monotonic years/months sequence check, it receives the Pivoted Header Series Bonus, waves the Data Penalties, and starts scoring numeric boundary columns.
-   - If a pivoted row scores `>= 50` and is higher than the standard detection score, it is flagged as `is_pivoted: true`.
-3. **Rejection of Pivoted Tables**:
-   - Therefore, any file flagged as `is_pivoted: true` is treated as unprocessible and rejected by default. The UI forces `isConfident = false` and displays the standard **"Unpredictable File Detected (Looks like Pivoted)"** warning banner. The user is required to manually confirm the headers or transpose the file.
-
-## The Keyword Validation Layer
-
-To prevent false positives and catch edge-cases, the engine employs a completely independent **Keyword Validation Layer** that runs unconditionally *after* the structural algorithm finds its best "target row". 
-
-While structural rules are entirely responsible for picking the row, the Keyword Layer acts as a secondary supervisor to validate it against a multi-language dictionary (`possible_english_keys.json`).
-
-### Keyword Rule 1: The Pivoted Fallback Trap
-If the structural engine scores a row highly (`>= 50%`) but the standard keyword dictionary density is extremely low (`< 50%`), it indicates a potential false-positive. The Keyword Layer then executes a strict "Absolute Match" check. 
-
-If it finds at least **2 absolute dictionary keyword matches** in that row (ignoring density), it concludes the row is actually a **Pivoted Table Header** (where a few category names sit alongside horizontal data points like dates/months that diluted the standard keyword score). The engine forces `is_pivoted: true` and crashes the UI to the "Unpredictable File" error banner.
-
-### Keyword Rule 2: Structural Failure with Dictionary Matches
-If the structural engine scores a row poorly (`< 50%`) but the dictionary keyword density is high (`>= 50%`), it means the labels exist but the actual file data beneath them is messy, empty, or unpredictable. 
-The system naturally fails the file due to the low structural score, but explicitly displays both the Structural and Keyword scores side-by-side in the error banner (e.g., `Structural: 25% | Keyword: 100%`) so the user understands *why* the file was rejected despite having valid header names.

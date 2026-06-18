@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileState } from '../fileUpload/useFilePipeline';
-import { scoreRowContextually, scoreRowKeywords, scoreRowKeywordsPivoted, getCellType, normalizeScore } from './headerDetector';
+import { calculateStructuralScore, calculateKeywordScore, verifyFinalHeader, getCellType } from './headerDetector';
 import './HeaderConfirmationUI.css';
 
 interface HeaderConfirmationUIProps {
@@ -17,12 +17,18 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
   const [currentKeywordConfidence, setCurrentKeywordConfidence] = useState<number | undefined>(
     fileState.keywordConfidence
   );
+  const [currentVerticalKeywordScore, setCurrentVerticalKeywordScore] = useState<number | undefined>(
+    fileState.verticalKeywordScore
+  );
+  const [currentIsPivoted, setCurrentIsPivoted] = useState<boolean | undefined>(
+    fileState.isPivoted
+  );
 
-  const isConfident = currentConfidence !== undefined && currentConfidence >= 50 && !fileState.isPivoted;
+  const isConfident = currentConfidence !== undefined && currentConfidence >= 50 && !currentIsPivoted;
 
   // 0-indexed row index selection
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | undefined>(
-    fileState.headerConfidence !== undefined && fileState.headerConfidence >= 50 && !fileState.isPivoted
+    fileState.headerConfidence !== undefined && fileState.headerConfidence >= 50 && !currentIsPivoted
       ? fileState.headerRowIndex
       : undefined
   );
@@ -65,8 +71,10 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
       setRowNumberInput(idx !== undefined && idx !== -1 ? String(idx + 1) : '');
       setCurrentConfidence(fileState.headerConfidence);
       setCurrentKeywordConfidence(fileState.keywordConfidence);
+      setCurrentVerticalKeywordScore(fileState.verticalKeywordScore);
+      setCurrentIsPivoted(fileState.isPivoted);
     }
-  }, [fileState.sourceHeaders, fileState.headerConfidence, fileState.keywordConfidence, fileState.headerRowIndex]);
+  }, [fileState.sourceHeaders, fileState.headerConfidence, fileState.keywordConfidence, fileState.verticalKeywordScore, fileState.isPivoted, fileState.headerRowIndex]);
 
   // Handle manual input of the row number
   const handleRowNumberInputChange = (val: string) => {
@@ -77,15 +85,19 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
       setSelectedRowIndex(idx);
 
       // Recalculate confidence score dynamically
-      const res = scoreRowContextually(idx, fileState.sampleRows);
-      const kwRes = fileState.isPivoted ? scoreRowKeywordsPivoted(fileState.sampleRows[idx]) : scoreRowKeywords(fileState.sampleRows[idx]);
-      // Wait, what if it's pivoted? We shouldn't guess, manual select means we use standard check
+      const res = calculateStructuralScore(idx, fileState.sampleRows);
+      const kwRes = calculateKeywordScore(fileState.sampleRows[idx]);
+      const valRes = verifyFinalHeader(fileState.sampleRows, idx, kwRes.score);
       setCurrentConfidence(Math.min(100, Math.max(0, res.score)));
       setCurrentKeywordConfidence(Math.min(100, Math.max(0, kwRes.score)));
+      setCurrentVerticalKeywordScore(valRes.verticalKeywordScore);
+      setCurrentIsPivoted(valRes.isPivoted);
     } else {
       setSelectedRowIndex(undefined);
       setCurrentConfidence(undefined);
       setCurrentKeywordConfidence(undefined);
+      setCurrentVerticalKeywordScore(undefined);
+      setCurrentIsPivoted(undefined);
     }
   };
 
@@ -110,10 +122,13 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
     setRowNumberInput(String(idx + 1));
 
     // Recalculate confidence score dynamically
-    const res = scoreRowContextually(idx, fileState.sampleRows);
-    const kwRes = fileState.isPivoted ? scoreRowKeywordsPivoted(fileState.sampleRows[idx]) : scoreRowKeywords(fileState.sampleRows[idx]);
+    const res = calculateStructuralScore(idx, fileState.sampleRows);
+    const kwRes = calculateKeywordScore(fileState.sampleRows[idx]);
+    const valRes = verifyFinalHeader(fileState.sampleRows, idx, kwRes.score);
     setCurrentConfidence(Math.min(100, Math.max(0, res.score)));
     setCurrentKeywordConfidence(Math.min(100, Math.max(0, kwRes.score)));
+    setCurrentVerticalKeywordScore(valRes.verticalKeywordScore);
+    setCurrentIsPivoted(valRes.isPivoted);
   };
 
   // Compute dynamic scoring factor breakdown for the selected row
@@ -124,17 +139,11 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
     const row = allRows[rowIndex];
     if (!row || row.length === 0) return null;
 
-    const checkPivoted = !!fileState.isPivoted;
-
     // The detector natively returns the correct pillar-based breakdown and score
-    const res = scoreRowContextually(rowIndex, allRows, checkPivoted);
+    const res = calculateStructuralScore(rowIndex, allRows);
     const breakdown = res.breakdown;
 
-    if (checkPivoted) {
-      breakdown.push({ name: 'Unsupported Pivoted Structure Penalty', score: -100 });
-    }
-
-    const totalCalculated = res.score - (checkPivoted ? 100 : 0);
+    const totalCalculated = res.score;
     const finalCapped = Math.min(100, Math.max(0, totalCalculated));
 
     breakdown.push({ name: '---', score: 0 }); // Divider
@@ -144,7 +153,7 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
       breakdown.push({ name: `Final Capped Structural %`, score: finalCapped });
     }
 
-    const kwRes = checkPivoted ? scoreRowKeywordsPivoted(row) : scoreRowKeywords(row);
+    const kwRes = calculateKeywordScore(row);
     if (kwRes.breakdown.length > 0) {
       breakdown.push({ name: '---', score: 0 });
       kwRes.breakdown.forEach(b => breakdown.push(b));
@@ -220,55 +229,20 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
 
       {selectedRowIndex !== undefined && (
         <>
-          {selectedRowIndex !== fileState.headerRowIndex ? (
-            <div className="status-banner banner-info">
-              <div className="status-banner-content">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ flexShrink: 0 }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h4 className="status-banner-title">Manual Row Selection (Structural: {currentConfidence}%{currentKeywordConfidence !== undefined ? ` | Keyword: ${currentKeywordConfidence}%` : ''})</h4>
-              </div>
-              <div ref={tooltipRef} style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setShowScoringDetails(!showScoringDetails)}
-                  className="tooltip-toggle-btn"
-                >
-                  {showScoringDetails ? 'Hide Scoring Details' : 'View Scoring Details'}
-                </button>
-                {showScoringDetails && (
-                  <div className="heuristic-tooltip-panel">
-                    <h5 className="heuristic-tooltip-title">Heuristic Breakdown:</h5>
-                    <ul className="heuristic-list">
-                      {getScoringBreakdown()?.map((item, i) => (
-                        <li key={i} className="heuristic-item">
-                          {item.name === '---' ? (
-                            <div className="heuristic-item-divider" />
-                          ) : (
-                            <>
-                              <span className="heuristic-item-name">{item.name}</span>
-                              <span className="heuristic-item-score" style={{
-                                color: item.name.includes('Normalized %')
-                                  ? '#38BDF8'
-                                  : item.score > 0 ? '#10B981' : item.score < 0 ? '#EF4444' : '#94A3B8'
-                              }}>
-                                {item.score > 0 && !item.name.includes('Normalized %') ? '+' : ''}{item.score}{item.name.includes('Normalized %') ? '%' : ''}
-                              </span>
-                            </>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : isConfident ? (
+          {isConfident ? (
             <div className="status-banner banner-success">
               <div className="status-banner-content">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 <div>
-                  <h4 className="status-banner-title">Valid Header Detected (Structural: {currentConfidence}%{currentKeywordConfidence !== undefined ? ` | Keyword: ${currentKeywordConfidence}%` : ''})</h4>
-                  <p className="status-banner-desc">Row {selectedRowIndex + 1} appears to be the most confident header row.</p>
+                  <h4 className="status-banner-title" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    Valid Header Detected
+                    <span style={{ fontSize: '12px', padding: '2px 8px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'normal' }}>
+                      {selectedRowIndex === fileState.headerRowIndex ? 'Auto-Generated' : 'Manual'}
+                    </span>
+                  </h4>
+                  <p className="status-banner-desc">
+                    Row {selectedRowIndex + 1} is confident. (Structural: {currentConfidence}%{currentKeywordConfidence !== undefined ? ` | Keyword: ${currentKeywordConfidence}%` : ''})
+                  </p>
                 </div>
               </div>
               <div ref={tooltipRef} style={{ position: 'relative' }}>
@@ -310,7 +284,20 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
               <div className="status-banner-content">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 <div>
-                  <h4 className="status-banner-title">Unpredictable File Detected {fileState.isPivoted ? '(Looks like Pivoted) ' : ''}(Structural: {currentConfidence}%{currentKeywordConfidence !== undefined ? ` | Keyword: ${currentKeywordConfidence}%` : ''})</h4>
+                  <h4 className="status-banner-title" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    Unpredictable File Detected
+                    <span style={{ fontSize: '12px', padding: '2px 8px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'normal' }}>
+                      {selectedRowIndex === fileState.headerRowIndex ? 'Auto-Generated' : 'Manual'}
+                    </span>
+                  </h4>
+                  <p className="status-banner-desc">
+                    Row {selectedRowIndex + 1} lacks confidence. (Structural: {currentConfidence}%{currentKeywordConfidence !== undefined ? ` | Keyword: ${currentKeywordConfidence}%` : ''}{currentVerticalKeywordScore !== undefined ? ` | Vertical Keyword: ${currentVerticalKeywordScore}%` : ''})
+                  </p>
+                  {currentIsPivoted && (
+                    <p className="status-banner-desc" style={{ marginTop: '4px', color: 'var(--danger-color)', fontWeight: 500 }}>
+                      (Looks like Pivoted Table)
+                    </p>
+                  )}
                 </div>
               </div>
               <div ref={tooltipRef} style={{ position: 'relative' }}>
@@ -349,7 +336,8 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
             </div>
           )}
         </>
-      )}
+      )
+      }
 
       {/* Row Number Input and Browse Button */}
       <div className="row-input-layout">
@@ -379,44 +367,46 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
       {/* Comma-separated textarea removed in favor of the clean dynamic spreadsheet preview context below */}
 
       {/* Solution 2: Inline 3-Row Context Preview */}
-      {selectedRowIndex !== undefined && contextRows.length > 0 && (
-        <div className="inline-preview-section">
-          <h4 className="inline-preview-title">Inline Preview Context:</h4>
-          <div className="data-table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '130px' }}>Row Type</th>
-                  <th style={{ width: '60px' }}>Row</th>
-                  {inlineColIndices.map((colIdx) => (
-                    <th key={colIdx} style={{ minWidth: '100px' }}>
-                      Column {colIdx + 1}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {contextRows.map((cRow) => (
-                  <tr key={cRow.index} style={{ background: cRow.label === 'Header Row' ? 'rgba(59, 130, 246, 0.15)' : 'transparent' }}>
-                    <td style={{ fontWeight: cRow.label === 'Header Row' ? 'bold' : 'normal', color: cRow.label === 'Header Row' ? '#60a5fa' : 'var(--text-secondary)' }}>
-                      {cRow.label}
-                    </td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{cRow.index + 1}</td>
-                    {inlineColIndices.map((colIdx) => {
-                      const cellVal = colIdx < cRow.data.length ? cRow.data[colIdx] : '';
-                      return (
-                        <td key={colIdx} className="cell-truncate" title={cellVal === null || cellVal === undefined ? '' : String(cellVal)}>
-                          {cellVal === null || cellVal === undefined ? '' : String(cellVal)}
-                        </td>
-                      );
-                    })}
+      {
+        selectedRowIndex !== undefined && contextRows.length > 0 && (
+          <div className="inline-preview-section">
+            <h4 className="inline-preview-title">Inline Preview Context:</h4>
+            <div className="data-table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '130px' }}>Row Type</th>
+                    <th style={{ width: '60px' }}>Row</th>
+                    {inlineColIndices.map((colIdx) => (
+                      <th key={colIdx} style={{ minWidth: '100px' }}>
+                        Column {colIdx + 1}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {contextRows.map((cRow) => (
+                    <tr key={cRow.index} style={{ background: cRow.label === 'Header Row' ? 'rgba(59, 130, 246, 0.15)' : 'transparent' }}>
+                      <td style={{ fontWeight: cRow.label === 'Header Row' ? 'bold' : 'normal', color: cRow.label === 'Header Row' ? '#60a5fa' : 'var(--text-secondary)' }}>
+                        {cRow.label}
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)' }}>{cRow.index + 1}</td>
+                      {inlineColIndices.map((colIdx) => {
+                        const cellVal = colIdx < cRow.data.length ? cRow.data[colIdx] : '';
+                        return (
+                          <td key={colIdx} className="cell-truncate" title={cellVal === null || cellVal === undefined ? '' : String(cellVal)}>
+                            {cellVal === null || cellVal === undefined ? '' : String(cellVal)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <div className="action-buttons-layout">
         {onError && (
@@ -439,92 +429,94 @@ export const HeaderConfirmationUI: React.FC<HeaderConfirmationUIProps> = ({ file
       </div>
 
       {/* Solution 1: Paginated Full Preview in Modal Dialog */}
-      {isModalOpen && fileState.sampleRows && (
-        <div className="modal-full-overlay">
-          <div className="glass-panel modal-full-content">
+      {
+        isModalOpen && fileState.sampleRows && (
+          <div className="modal-full-overlay">
+            <div className="glass-panel modal-full-content">
 
-            {/* Modal Header */}
-            <div className="modal-full-header">
-              <h3>Select Header Row from Full Preview</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="modal-full-close"
-                title="Close"
-              >
-                &times;
-              </button>
-            </div>
+              {/* Modal Header */}
+              <div className="modal-full-header">
+                <h3>Select Header Row from Full Preview</h3>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="modal-full-close"
+                  title="Close"
+                >
+                  &times;
+                </button>
+              </div>
 
-            {/* Modal Table Container */}
-            <div className="modal-table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '80px' }}>Action</th>
-                    <th style={{ width: '50px' }}>Row</th>
-                    {modalColIndices.map((colIdx) => (
-                      <th key={colIdx} style={{ minWidth: '100px' }}>
-                        Column {colIdx + 1}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedRows.map((row, index) => {
-                    const actualIdx = startIdx + index;
-                    const isSelected = selectedRowIndex === actualIdx;
-                    return (
-                      <tr key={actualIdx} style={{ background: isSelected ? 'rgba(59, 130, 246, 0.15)' : actualIdx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-                        <td>
-                          <button
-                            onClick={() => {
-                              selectRowIndexFromSource(actualIdx);
-                              setIsModalOpen(false);
-                            }}
-                            className={`select-row-btn ${isSelected ? 'selected' : 'unselected'}`}
-                          >
-                            {isSelected ? 'Selected' : 'Select'}
-                          </button>
-                        </td>
-                        <td style={{ color: 'var(--text-secondary)' }}>{actualIdx + 1}</td>
-                        {modalColIndices.map((colIdx) => {
-                          const cellVal = colIdx < row.length ? row[colIdx] : '';
-                          return (
-                            <td key={colIdx} className="cell-truncate" title={cellVal === null || cellVal === undefined ? '' : String(cellVal)}>
-                              {cellVal === null || cellVal === undefined ? '' : String(cellVal)}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+              {/* Modal Table Container */}
+              <div className="modal-table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '80px' }}>Action</th>
+                      <th style={{ width: '50px' }}>Row</th>
+                      {modalColIndices.map((colIdx) => (
+                        <th key={colIdx} style={{ minWidth: '100px' }}>
+                          Column {colIdx + 1}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedRows.map((row, index) => {
+                      const actualIdx = startIdx + index;
+                      const isSelected = selectedRowIndex === actualIdx;
+                      return (
+                        <tr key={actualIdx} style={{ background: isSelected ? 'rgba(59, 130, 246, 0.15)' : actualIdx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
+                          <td>
+                            <button
+                              onClick={() => {
+                                selectRowIndexFromSource(actualIdx);
+                                setIsModalOpen(false);
+                              }}
+                              className={`select-row-btn ${isSelected ? 'selected' : 'unselected'}`}
+                            >
+                              {isSelected ? 'Selected' : 'Select'}
+                            </button>
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)' }}>{actualIdx + 1}</td>
+                          {modalColIndices.map((colIdx) => {
+                            const cellVal = colIdx < row.length ? row[colIdx] : '';
+                            return (
+                              <td key={colIdx} className="cell-truncate" title={cellVal === null || cellVal === undefined ? '' : String(cellVal)}>
+                                {cellVal === null || cellVal === undefined ? '' : String(cellVal)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Modal Pagination Controls */}
-            <div className="modal-pagination">
-              <button
-                disabled={currentPage === 0}
-                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                className="btn pagination-btn"
-              >
-                Previous
-              </button>
-              <span className="pagination-info">
-                Page {currentPage + 1} of {totalPages} (Rows {startIdx + 1} - {Math.min(startIdx + pageSize, totalRowsCount)} of {totalRowsCount})
-              </span>
-              <button
-                disabled={currentPage >= totalPages - 1}
-                onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                className="btn pagination-btn"
-              >
-                Next
-              </button>
+              {/* Modal Pagination Controls */}
+              <div className="modal-pagination">
+                <button
+                  disabled={currentPage === 0}
+                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                  className="btn pagination-btn"
+                >
+                  Previous
+                </button>
+                <span className="pagination-info">
+                  Page {currentPage + 1} of {totalPages} (Rows {startIdx + 1} - {Math.min(startIdx + pageSize, totalRowsCount)} of {totalRowsCount})
+                </span>
+                <button
+                  disabled={currentPage >= totalPages - 1}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                  className="btn pagination-btn"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };

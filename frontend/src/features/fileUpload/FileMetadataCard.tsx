@@ -58,7 +58,7 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
     const color = colors[status] || colors.pending;
 
     return (
-      <span 
+      <span
         className="status-badge"
         style={{ backgroundColor: color.bg, color: color.text }}
       >
@@ -111,7 +111,6 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
                         <div>
                           <span className="confidence-label">Structural Confidence:</span> {fs.headerConfidence}%
                           {fs.headerRowIndex !== undefined && ` (Row ${fs.headerRowIndex + 1})`}
-                          {fs.isPivoted && <span className="pivoted-warning" style={{marginLeft: '8px'}}>(Looks like Pivoted)</span>}
                         </div>
                       )}
                       {fs.keywordConfidence !== undefined && (
@@ -119,10 +118,20 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
                           <span className="confidence-label">Keyword Confidence:</span> {fs.keywordConfidence}%
                         </div>
                       )}
+                      {fs.verticalKeywordScore !== undefined && (
+                        <div>
+                          <span className="confidence-label">Pivoted Keyword Confidence:</span> {fs.verticalKeywordScore}%
+                        </div>
+                      )}
+                      {fs.isPivoted && (
+                        <div className="pivoted-warning" style={{ color: 'var(--danger-color)', marginTop: '2px', marginLeft: '0px', fontWeight: 500 }}>
+                          (Looks like Pivoted Table)
+                        </div>
+                      )}
                     </div>
                   )}
-                  {fs.status !== 'error' && fs.sourceHeaders && fs.sourceHeaders.length > 0 && (
-                    <div 
+                  {fs.status !== 'error' && fs.status !== 'confirming_header' && fs.headerConfidence !== undefined && fs.headerConfidence >= 50 && !fs.isPivoted && fs.sourceHeaders && fs.sourceHeaders.length > 0 && (
+                    <div
                       onClick={() => setActivePopupFile(fs.file.name)}
                       className="view-headers-link"
                     >
@@ -157,15 +166,15 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
 
       {/* Header View Popup Modal */}
       {activePopupFile && (
-        <div 
-          className="modal-overlay" 
+        <div
+          className="modal-overlay"
           onClick={() => setActivePopupFile(null)}
         >
           {(() => {
             const fs = fileStates.find(f => f.file.name === activePopupFile);
             if (!fs || !fs.sourceHeaders) return null;
             return (
-              <div 
+              <div
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
               >

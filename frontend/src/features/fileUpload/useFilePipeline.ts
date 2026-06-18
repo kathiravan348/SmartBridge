@@ -15,6 +15,7 @@ export interface FileState {
   sampleRows?: any[][];
   headerRowIndex?: number;
   isPivoted?: boolean;
+  verticalKeywordScore?: number;
 }
 
 export const useFilePipeline = () => {
@@ -83,7 +84,8 @@ export const useFilePipeline = () => {
                 headerConfidence: detectionResult.confidence_score,
                 keywordConfidence: detectionResult.keyword_confidence_score,
                 keywordBreakdown: detectionResult.keyword_breakdown,
-                isPivoted: detectionResult.is_pivoted
+                isPivoted: detectionResult.is_pivoted,
+                verticalKeywordScore: detectionResult.vertical_keyword_score
               } 
             : f
         ));
@@ -102,7 +104,8 @@ export const useFilePipeline = () => {
               keywordBreakdown: detectionResult.keyword_breakdown,
               sampleRows: detectionResult.sample_rows, 
               headerRowIndex: detectionResult.header_row_index,
-              isPivoted: detectionResult.is_pivoted
+              isPivoted: detectionResult.is_pivoted,
+              verticalKeywordScore: detectionResult.vertical_keyword_score
             } 
           : f
         )
