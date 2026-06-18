@@ -44,22 +44,30 @@ Every cell is first classified into one of four types:
 
 - Each candidate row is scored by comparing its cell types against the **5 rows directly below** it
 - The engine looks for **data-type boundaries** — where a `string` cell sits above `number`/`date` cells
-- If fewer than 3 context rows exist below a candidate, all signal weights are scaled to **0.6×**
 
-### The 4-Pillar Scoring System
+### The Per-Column Averaged System
 
-The algorithm evaluates candidates natively on a 0-100% scale using 4 pillars:
+Instead of treating the row as the base unit, the algorithm natively scores every column (cell) in a row out of a perfect 100%. The row's final score is the average of its columns.
 
-| Pillar / Signal | Impact | How It's Calculated |
+For every cell in a candidate row, it earns points across 3 traits:
+
+| Trait | Points | How It's Calculated |
 |---|---|---|
-| **Pillar 1: Base Density** | Up to +20% | `(Filled Cells / Max File Width) * 20%`. Rewards dense rows over sparse title rows. |
-| **Pillar 2: Data Boundary** | Up to +100% | `(Columns with Boundary / Filled Cells) * 100%`. The strongest signal; true headers sit directly above data. |
-| **Pillar 3: Data Consistency**| Up to +35% | `(Consistent Columns / Filled Cells) * 35%`. Rewards headers that sit above consistent text columns. |
-| **Pillar 4: Header Traits** | +10% to +15% | +10% if row is 100% strings. +5% if all columns are uniquely named. |
-| **Critical: Mixed Numeric Penalty** | −30% | Row contains stray numbers but is not majority data. |
-| **Critical: Pure Data Penalty** | −100% | ≥ 50% of cells are quantitative data. |
-| **Critical: Orphan Penalty** | −100% | No data exists below the row. |
-| **Critical: Duplicate Penalty** | −5% each | Punishes duplicate column names. |
+| **Cell Presence** | +20 pts | The cell contains data. (Handles density automatically since empty cells score 0). |
+| **Data Relationship** | Up to +60 pts | +60 pts if a strict boundary exists (String sits above a Number/Date). +40 pts if there's no boundary but data remains consistent (String sits above a String). |
+| **Header Traits** | Up to +20 pts | +10 pts if the cell is text (not numbers). +10 pts if the text is unique across the row. |
+
+**Preliminary Score:** `(Sum of all Column Scores) ÷ (Total File Width)`
+
+### Row-Level Penalty Multipliers
+
+Once the Preliminary Score is calculated, the engine applies safety multipliers to heavily penalize invalid rows.
+
+| Multiplier | Impact | Trigger Condition |
+|---|---|---|
+| **Mixed Numeric Penalty** | × 0.5 | The candidate row contains stray numbers or dates. |
+| **Pure Data Penalty** | × 0.0 | ≥ 50% of the populated cells in the candidate row are numbers or dates. |
+| **Orphan Header Penalty**| × 0.0 | The candidate row has no data rows below it. |
 
 ---
 

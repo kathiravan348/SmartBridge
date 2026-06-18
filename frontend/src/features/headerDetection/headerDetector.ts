@@ -43,100 +43,98 @@ export function calculateStructuralScore(rowIndex: number, allRows: any[][]): { 
   
   let filledCells = 0;
   let numericCells = 0;
-  let stringCells = 0;
-  let consistentColumns = 0;
-  let dataBoundaryColumns = 0;
 
-  const uniqueValues = new Set<string>();
-  let duplicates = 0;
-
-  // Context rows (next 5)
-  const contextRows = allRows.slice(rowIndex + 1, rowIndex + 6);
-  const contextScale = contextRows.length < 3 ? 0.6 : 1.0;
-
-  row.forEach((cell, colIndex) => {
+  // Track unique values to calculate traits score later
+  const valueCounts = new Map<string, number>();
+  row.forEach(cell => {
     const cType = getCellType(cell);
-
     if (cType !== 'empty') {
       filledCells += 1;
+      if (cType === 'number' || cType === 'date') {
+        numericCells += 1;
+      }
       const cellStr = String(cell).trim().toLowerCase();
-      if (uniqueValues.has(cellStr)) {
-        duplicates += 1;
-      } else {
-        uniqueValues.add(cellStr);
-      }
-    }
-
-    if (cType === 'number' || cType === 'date') {
-      numericCells += 1;
-    }
-
-    if (cType === 'string') {
-      stringCells += 1;
-      let belowNumericOrDate = 0;
-      let belowString = 0;
-
-      for (const contextRow of contextRows) {
-        if (colIndex < contextRow.length) {
-          const belowType = getCellType(contextRow[colIndex]);
-          if (belowType === 'number' || belowType === 'date') {
-            belowNumericOrDate += 1;
-          } else if (belowType === 'string') {
-            belowString += 1;
-          }
-        }
-      }
-
-      if (belowNumericOrDate + belowString > 0) {
-        if (belowNumericOrDate > belowString) {
-          const firstBelowCell = contextRows[0] && colIndex < contextRows[0].length ? contextRows[0][colIndex] : null;
-          const firstBelowType = getCellType(firstBelowCell);
-          if (firstBelowType === 'number' || firstBelowType === 'date' || firstBelowType === 'empty') {
-            dataBoundaryColumns += 1;
-          } else {
-            consistentColumns += 1;
-          }
-        } else if (belowString >= belowNumericOrDate) {
-          consistentColumns += 1;
-        }
-      }
+      valueCounts.set(cellStr, (valueCounts.get(cellStr) || 0) + 1);
     }
   });
 
   if (filledCells === 0) return { score: 0, breakdown: [] };
 
-  // Pillar 1: Base Density (Max 20%)
-  const densityScore = Math.round((filledCells / maxFileWidth) * 20);
-  if (densityScore > 0) breakdown.push({ name: `Pillar 1: Base Density (${filledCells} cells)`, score: densityScore });
+  // Context rows (next 5)
+  const contextRows = allRows.slice(rowIndex + 1, rowIndex + 6);
 
-  // Pillar 2: Data Boundary Signal (Max 100%)
-  const boundaryScore = Math.round((dataBoundaryColumns / filledCells) * 100 * contextScale);
-  if (boundaryScore > 0) breakdown.push({ name: `Pillar 2: Data Boundary Signal (${dataBoundaryColumns} columns)`, score: boundaryScore });
+  let totalColumnScore = 0;
 
-  // Pillar 3: Data Consistency (Max 35%)
-  const consistencyScore = Math.round((consistentColumns / filledCells) * 35 * contextScale);
-  if (consistencyScore > 0) breakdown.push({ name: `Pillar 3: Data Consistency (${consistentColumns} columns)`, score: consistencyScore });
+  for (let colIndex = 0; colIndex < maxFileWidth; colIndex++) {
+    const cell = colIndex < row.length ? row[colIndex] : null;
+    const cType = getCellType(cell);
 
-  // Pillar 4: Header Traits
-  const stringBonus = (stringCells === filledCells) ? 10 : 0;
-  if (stringBonus > 0) breakdown.push({ name: `Pillar 4: 100% String Bonus`, score: stringBonus });
+    if (cType === 'empty') continue;
 
-  const uniqueBonus = (filledCells > 1 && duplicates === 0) ? 5 : 0;
-  if (uniqueBonus > 0) breakdown.push({ name: `Pillar 4: Uniqueness Bonus`, score: uniqueBonus });
+    let colScore = 0;
+    
+    // 1. Cell Presence (+20 pts)
+    colScore += 20;
 
-  let totalScore = densityScore + boundaryScore + consistencyScore + stringBonus + uniqueBonus;
+    // 2. Header Traits (Up to +20 pts)
+    if (cType === 'string') {
+      colScore += 10;
+      const cellStr = String(cell).trim().toLowerCase();
+      if (valueCounts.get(cellStr) === 1) {
+        colScore += 10; // Unique across the row
+      }
+    }
 
-  // Penalties
+    // 3. Data Relationship (Up to +60 pts)
+    let hasBoundary = false;
+    let isConsistent = false;
+
+    if (cType === 'string') {
+      // Find the first non-empty cell directly below this column in the context window
+      for (const contextRow of contextRows) {
+        if (colIndex < contextRow.length) {
+          const belowType = getCellType(contextRow[colIndex]);
+          if (belowType !== 'empty') {
+            if (belowType === 'number' || belowType === 'date') {
+              hasBoundary = true;
+            } else if (belowType === 'string') {
+              isConsistent = true;
+            }
+            break; // Stop at the first non-empty cell below
+          }
+        }
+      }
+
+      if (hasBoundary) {
+        colScore += 60;
+      } else if (isConsistent) {
+        colScore += 40;
+      }
+    }
+
+    totalColumnScore += colScore;
+  }
+
+  // Preliminary Average Score
+  const preliminaryScore = totalColumnScore / maxFileWidth;
+  breakdown.push({ name: `Base Average Score (${filledCells}/${maxFileWidth} cols)`, score: Math.round(preliminaryScore) });
+
+  let currentScore = preliminaryScore;
+
+  // Context Scaling has been intentionally removed; relying purely on density and data-presence.
+
+  // Numeric Penalties
   if ((numericCells / filledCells) >= 0.5) {
-    totalScore -= 100; // Pure Data Penalty
-    breakdown.push({ name: `Critical Penalty: Pure Data Row`, score: -100 });
+    const penalty = currentScore;
+    currentScore *= 0.0;
+    if (penalty > 0) breakdown.push({ name: `Critical Penalty: Pure Data Row (0.0x)`, score: -Math.round(penalty) });
+  } else if (numericCells > 0) {
+    const penalty = currentScore * 0.5;
+    currentScore *= 0.5;
+    if (penalty > 0) breakdown.push({ name: `Critical Penalty: Mixed Numeric Data (0.5x)`, score: -Math.round(penalty) });
   }
 
-  if (numericCells > 0 && (numericCells / filledCells) < 0.5) {
-    totalScore -= 30; // Mixed Numeric Penalty
-    breakdown.push({ name: `Critical Penalty: Mixed Numeric Data`, score: -30 });
-  }
-
+  // Orphan Penalty
   let hasDataBelow = false;
   for (const contextRow of contextRows) {
     for (const c of contextRow) {
@@ -149,17 +147,14 @@ export function calculateStructuralScore(rowIndex: number, allRows: any[][]): { 
   }
 
   if (!hasDataBelow) {
-    totalScore -= 100; // Orphan Header Penalty
-    breakdown.push({ name: `Critical Penalty: Orphan Header (No Data Below)`, score: -100 });
+    const penalty = currentScore;
+    currentScore *= 0.0;
+    if (penalty > 0) breakdown.push({ name: `Critical Penalty: Orphan Header / No Data Below (0.0x)`, score: -Math.round(penalty) });
   }
 
-  if (duplicates > 0) {
-    const dupPenalty = duplicates * 5;
-    totalScore -= dupPenalty; // Duplicate Penalty
-    breakdown.push({ name: `Critical Penalty: Duplicated Header Names`, score: -dupPenalty });
-  }
+  const finalScore = Math.min(100, Math.round(currentScore));
 
-  return { score: totalScore, breakdown };
+  return { score: finalScore, breakdown };
 }
 
 // ============================================================================

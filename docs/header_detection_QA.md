@@ -6,18 +6,20 @@ Based on the SmartBridge Header Auto-Detection Engine product overview and techn
 
 ## 1. Algorithm and Validation Rules for Header Detection
 
-The system uses a **4-Pillar Structural Heuristic Scoring Algorithm** instead of standard text parsing. This makes it language-agnostic and relies on data-type patterns. It evaluates candidate rows by looking at the 5 context rows immediately below them.
+The system uses a **Per-Column Averaged Heuristic Scoring Algorithm** instead of standard text parsing. This makes it language-agnostic and mathematically bounded between 0 and 100%.
 
-### The 4-Pillar Algorithm
-1. **Pillar 1: Base Density** - Measures how much of the file's maximum width the candidate row spans.
-2. **Pillar 2: Data Boundary Signal** - Identifies if the data structurally changes from text (String) to quantitative data (Numbers/Dates) directly below the row. *This is the strongest indicator of a header.*
-3. **Pillar 3: Data Consistency** - If there is no strict text-to-number boundary, it checks if the data below the candidate row remains consistent in type.
-4. **Pillar 4: Header Traits** - Awards bonus points if the row exhibits standard header traits (e.g., being composed entirely of text and having unique column names).
+### The Per-Column Algorithm
+Every column in a candidate row is evaluated out of **100 points**:
+1. **Cell Presence (+20 pts)**: The cell contains data (handles density natively).
+2. **Data Relationship (Up to +60 pts)**: Identifies if the data structurally changes from text to quantitative data directly below the row (+60 pts), or remains consistent text (+40 pts).
+3. **Header Traits (Up to +20 pts)**: Awards bonus points if the cell is purely text (+10 pts) and is uniquely named across the row (+10 pts).
+
+The row's preliminary score is simply the average of all its columns.
 
 ### Validation Rules & Detection Pipeline
 The engine runs an explicit **Three-Layer Architecture**:
 
-*   **Layer 1 (Structural Detection):** Scores all rows purely structurally using the 4 Pillars with strict penalties applied to numeric data.
+*   **Layer 1 (Structural Detection):** Calculates the preliminary column average and applies strict row-level multipliers (penalties) for numeric data.
 *   **Layer 2 (Keyword Scoring):** Scans the winning structural row contiguously from the first column until the first empty column. Calculates a keyword match percentage on that contiguous block.
 *   **Layer 3 (Validation Trap):** A supervisory validation step. If the contiguous keyword score from Layer 2 is `< 50%`, it runs a vertical keyword scan down the first column (up to 200 rows). If the vertical block matches keywords at `>= 50%` AND contains strictly unique labels, it explicitly flags the row as `isPivoted = true` for rejection.
 
@@ -25,27 +27,22 @@ The engine runs an explicit **Three-Layer Architecture**:
 
 ## 2. Probability / % Matching for Each Method
 
-The algorithm evaluates candidates natively on a **0-100% scale**. A final score of **≥ 50%** is required to achieve "High Confidence" auto-detection.
+The algorithm natively calculates a final score that cannot mathematically exceed **100%**. A final score of **≥ 50%** is required to achieve "High Confidence" auto-detection.
 
-### Positive Scoring (% Matching)
-*   **Base Density:** Up to **+20%** `(Filled Cells / Max File Width * 20%)`
-*   **Data Boundary Signal:** Up to **+100%** `(Columns with Boundary / Filled Cells * 100%)`
-*   **Data Consistency:** Up to **+35%** `(Consistent Columns / Filled Cells * 35%)`
-*   **Header Traits (100% Strings):** **+10%** bonus
-*   **Header Traits (Unique Columns):** **+5%** bonus
+### Positive Scoring (Per Column)
+*   **Presence:** **+20 pts** (Cell is populated)
+*   **Strict Boundary:** **+60 pts** (Cell is Text, data below is Number/Date)
+*   **Consistent Data:** **+40 pts** (Cell is Text, data below is Text)
+*   **String Trait:** **+10 pts** (Cell is Text)
+*   **Unique Trait:** **+10 pts** (Cell name does not repeat in the row)
 
-**Score Capping (Max 100%)**
-While the theoretical maximum sum of all pillars is 170%, the final structural score is strictly **capped at 100%** in the UI. 
-*Why?* This allows a perfect "Data Boundary" (100%) to instantly grant full confidence on its own, while a row lacking a strict data boundary can still build up a high confidence score (e.g., 70%) by combining base density, consistency, and header traits.
+**Preliminary Score:** Sum of column scores ÷ Total File Width.
 
-*Note: If there are fewer than 3 context rows below the candidate, all positive signal weights are scaled down by 0.6×.*
-
-### Critical Penalties (Validation Deductions)
-These penalties drastically reduce the probability of invalid rows being selected:
-*   **Pure Data Penalty:** **-100%** (Applied if ≥ 50% of the row consists of numbers or dates).
-*   **Orphan Header Penalty:** **-100%** (Applied if the row sits at the end of the file with no data below it).
-*   **Mixed Numeric Penalty:** **-30%** (Applied if the row contains stray numbers).
-*   **Duplicate Penalty:** **-5%** *per duplicate column name*.
+### Row-Level Penalties (The Multipliers)
+These penalties drastically reduce the probability of invalid rows being selected by multiplying the Preliminary Score:
+*   **Pure Data Penalty (× 0.0):** Applied if ≥ 50% of the row consists of numbers or dates.
+*   **Orphan Header Penalty (× 0.0):** Applied if the row sits at the end of the file with absolutely no data below it.
+*   **Mixed Numeric Penalty (× 0.5):** Applied if the row contains stray numbers.
 
 ---
 

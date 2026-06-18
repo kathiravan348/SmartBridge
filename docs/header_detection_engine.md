@@ -21,34 +21,21 @@ To ensure high accuracy, language-agnosticism, and proper handling of edge-cases
 
 ### Layer 1: Structural Detection (`calculateStructuralScore`)
 
-The first layer completely bypasses standard parsing logic and utilizes a **Structural Heuristic Scoring Algorithm**. This mathematical approach makes the engine 100% language-agnostic and fully secure (offline). It evaluates every candidate row directly across **Four Core Pillars** to generate a native **0-100% Confidence Score**.
+The first layer completely bypasses standard parsing logic and utilizes a **Per-Column Averaged Heuristic Scoring Algorithm**. This mathematical approach makes the engine 100% language-agnostic and fully secure (offline). Instead of treating the row as the base unit, it evaluates every individual cell in the candidate row on a native **0-100% Confidence Score**, and simply averages them based on the maximum width of the file.
 
-#### Pillar 1: Base Density (Max 20%)
-*How much of the file's width does this row span?*
-The engine calculates the width of the row compared to the maximum width of the entire file. Sparse titles (like a single "Q3 Report" cell) score very low here, while true headers spanning the entire table receive the full 20%.
-*   **Formula:** `(Filled Cells / Max File Width) * 20%`
+#### Scoring a Single Column (Max 100 pts)
+For every column in a row, the engine evaluates the cell:
 
-#### Pillar 2: Data Boundary Signal (Max 100%)
-*Does the data structurally change from Text to Quantitative Data directly below this row?*
-This is the strongest indicator of a true header. If a row is made of Text, and the cells below it are Numbers or Dates, it is sitting on a structural boundary. Because true headers always sit directly above data, this pillar alone is capable of granting a perfect 100% confidence.
-*   **Formula:** `(Columns with Boundary / Filled Cells) * 100%`
+*   **Cell Presence (+20 pts):** The cell contains data.
+*   **Header Traits (Up to +20 pts):** The cell is purely text (+10 pts) and its name is unique across the row (+10 pts).
+*   **Data Relationship (Up to +60 pts):** The engine looks at the data directly below the cell. If the cell is Text and transitions directly into Numbers/Dates, it earns a perfect **+60 pts** (Strict Boundary). If there is no strict boundary but the data simply remains consistently text below it, it earns a partial **+40 pts** (Consistent Data).
 
-#### Pillar 3: Data Consistency (Max 35%)
-*If there is no strict text-to-number boundary, is the data below it at least consistent?*
-For text-heavy tables (e.g., Header: "City" -> Data: "Austin"), there is no structural boundary. This pillar awards percentage points if the data simply remains consistent below the candidate header.
-*   **Formula:** `(Columns with Consistent Data / Filled Cells) * 35%`
+#### Row-Level Safety Multipliers
+Once the preliminary score is calculated by averaging all column scores, the engine actively guards against invalid rows by applying harsh **multipliers**:
 
-#### Pillar 4: Header Traits (Bonus)
-*Does it look like a standard header?*
-*   **100% String Bonus (+10%):** True headers are usually 100% text, unlike data rows that mix text and numbers.
-*   **Uniqueness Bonus (+5%):** True headers rarely have duplicate column names (e.g., two "Email" columns).
-
-#### Critical Penalties (The Red Flags)
-If a row exhibits traits of being pure data or invalid, it receives massive percentage penalties:
-*   **Pure Data Penalty (-100%):** If >= 50% of the row is composed of numbers or dates, it is mathematically proven to be a row of pure data, not a header.
-*   **Mixed Numeric Penalty (-30%):** Headers should not contain random numbers. Any numeric presence triggers a penalty.
-*   **Orphan Header Penalty (-100%):** A valid header row must sit on top of underlying data. If it sits at the very end of a file or above completely empty rows, it is rejected.
-*   **Duplicate Penalty (-5% per duplicate):** Repeated column names indicate bad data structuring.
+*   **Mixed Numeric Penalty (× 0.5 multiplier):** Applied if the row contains stray numbers or dates.
+*   **Pure Data Penalty (× 0.0 multiplier):** Applied if ≥ 50% of the populated cells are numbers or dates.
+*   **Orphan Header Penalty (× 0.0 multiplier):** Applied if there is absolutely no data underneath this row.
 
 ### Layer 2: Keyword Validation Layer (`calculateKeywordScore`)
 
@@ -79,31 +66,37 @@ Consider a messy, real-world Excel export that looks like this:
 | **6** | 1002 | Bob Jones | Sales | 95000 | 2021-03-22 |
 | **7** | 1003 | Charlie Brown | Marketing | 85000 | 2019-11-10 |
 
-Here is the detailed breakdown of how the 4-Pillar algorithm natively scores the file:
+Here is the detailed breakdown of how the algorithm natively scores the file (Max File Width = 5):
 
 #### **Row 1 Evaluation ("Q3 ACME Corp Financial Report")**
-*   **Pillar 1 (Density):** 1 filled cell out of 5 max columns = **+4%**.
-*   **Pillar 2 (Boundary):** No quantitative data directly below = **0%**.
-*   **Pillar 3 (Consistency):** Data is not consistent below = **0%**.
-*   **Pillar 4 (Traits):** 100% strings = **+10%**.
-*   **Total Confidence: 14%** *(Fails)*
+*   **Col A:** Presence (20) + Traits (20) + No Relationship (0) = 40 pts
+*   **Col B-E (Empty):** 0 pts
+*   **Preliminary Average:** (40 + 0 + 0 + 0 + 0) / 5 = **8%**.
+*   **Penalties:** None.
+*   **Final Score: 8%** *(Fails)*
 
 #### **Row 2 Evaluation ("Generated on:" \| "2023-10-01")**
-*   **Pillar 1 (Density):** 2 filled cells out of 5 = **+8%**.
-*   **Critical Penalty:** Mixed Numeric Data (contains a date) = **-30%**.
-*   **Total Confidence: 0%** *(Fails)*
+*   **Col A:** Presence (20) + Traits (20) + No Relationship (0) = 40 pts
+*   **Col B:** Presence (20) + Numeric (0) + No Relationship (0) = 20 pts
+*   **Preliminary Average:** (40 + 20 + 0 + 0 + 0) / 5 = **12%**.
+*   **Penalties:** Pure Data Penalty (≥ 50% numbers) -> Multiplier 0.0x
+*   **Final Score: 0%** *(Fails)*
 
 #### **Row 4 Evaluation (The True Header Row)**
-*   **Pillar 1 (Density):** 5 filled cells out of 5 = **+20%**.
-*   **Pillar 2 (Boundary):** Col A, Col D, Col E transition into numbers/dates = **+60%**.
-*   **Pillar 3 (Consistency):** Col B, Col C remain consistent text = **+14%**.
-*   **Pillar 4 (Traits):** 100% strings & unique = **+15%**.
-*   **Total Confidence: 109% -> Capped at 100%** *(Highest Score 🏆 - Officially Selected as Header)*
+*   **Col A:** Presence (20) + Traits (20) + Boundary (60) = 100 pts
+*   **Col B:** Presence (20) + Traits (20) + Consistent (40) = 80 pts
+*   **Col C:** Presence (20) + Traits (20) + Consistent (40) = 80 pts
+*   **Col D:** Presence (20) + Traits (20) + Boundary (60) = 100 pts
+*   **Col E:** Presence (20) + Traits (20) + Boundary (60) = 100 pts
+*   **Preliminary Average:** (100 + 80 + 80 + 100 + 100) / 5 = **92%**.
+*   **Penalties:** None.
+*   **Final Score: 92%** *(Highest Score 🏆 - Officially Selected as Header)*
 
 #### **Row 5 Evaluation (First Row of Data)**
-*   **Pillar 1 (Density):** 5 filled cells = **+20%**.
-*   **Critical Penalty:** Pure Data Row (Col A, D, E are quantitative, which is >= 50%) = **-100%**.
-*   **Total Confidence: 0%** *(Fails)*
+*   **Col A-E:** 100% Data Presence.
+*   **Preliminary Average:** High raw points.
+*   **Penalties:** Pure Data Penalty (Col A, D, E are quantitative, which is ≥ 50%) -> Multiplier 0.0x
+*   **Final Score: 0%** *(Fails)*
 
 ### Multi-Language Support
 Because the engine looks for *data type boundaries* (Strings transitioning into Numbers) instead of specific words, it natively supports headers written in **any language**.
