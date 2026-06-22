@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { detectHeaderRow } from '../headerDetection/headerDetector';
 
-export type FileStatus = 'pending' | 'queued' | 'detecting' | 'confirming_header' | 'mapping' | 'validating' | 'completed' | 'error';
+export type FileStatus = 'pending' | 'queued' | 'detecting' | 'confirming_header' | 'mapping' | 'mapping_confirm' | 'completed' | 'error';
 
 export interface FileState {
   file: File;
@@ -142,7 +142,7 @@ export const useFilePipeline = () => {
   };
 
   const confirmMapping = async (fileName: string) => {
-    setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'validating' } : f));
+    setSelectedFiles(prev => prev.map(f => f.file.name === fileName ? { ...f, status: 'mapping_confirm' } : f));
     await new Promise(r => setTimeout(r, 1500));
     setSelectedFiles(prev => prev.map(f => {
       if (f.file.name === fileName) {
@@ -156,7 +156,7 @@ export const useFilePipeline = () => {
   const confirmHeader = (fileName: string, finalHeaders: string[]) => {
     setSelectedFiles(prev => prev.map(f => {
       if (f.file.name === fileName) {
-        return { ...f, status: 'completed', sourceHeaders: finalHeaders };
+        return { ...f, status: 'mapping', sourceHeaders: finalHeaders };
       }
       return f;
     }));

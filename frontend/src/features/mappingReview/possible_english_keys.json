@@ -639,6 +639,7 @@
   ],
   "total amount invoices": [
     "total amount invoices",
+    "total amount of invoices",
     "invoice spend",
     "total invoice amount",
     "gross invoice value",
@@ -663,6 +664,7 @@
   ],
   "total amount purchase orders": [
     "total amount purchase orders",
+    "total amount of purchase orders",
     "po value",
     "ordered amount",
     "total po amount",
@@ -687,6 +689,7 @@
   ],
   "total amount payments paid": [
     "total amount payments paid",
+    "total amount of payments paid",
     "amount paid",
     "total paid",
     "historical spend",
@@ -711,6 +714,7 @@
   ],
   "total amount payments due": [
     "total amount payments due",
+    "total amount of payments due",
     "amount due",
     "total due",
     "payables balance",
@@ -735,6 +739,7 @@
   ],
   "total amount payments open": [
     "total amount payments open",
+    "total amount of payments open",
     "open ap amount",
     "outstanding amount",
     "open liabilities",

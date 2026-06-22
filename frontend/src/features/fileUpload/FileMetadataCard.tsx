@@ -50,7 +50,7 @@ const FileMetadataCard: React.FC<FileMetadataCardProps> = ({ fileStates, onAddFi
       pending: { bg: 'rgba(148, 163, 184, 0.2)', text: '#94a3b8' },
       queued: { bg: 'rgba(59, 130, 246, 0.2)', text: '#60a5fa' },
       mapping: { bg: 'rgba(234, 179, 8, 0.2)', text: '#facc15' },
-      validating: { bg: 'rgba(249, 115, 22, 0.2)', text: '#fb923c' },
+      mapping_confirm: { bg: 'rgba(249, 115, 22, 0.2)', text: '#fb923c' },
       completed: { bg: 'rgba(16, 185, 129, 0.2)', text: '#34d399' },
       error: { bg: 'rgba(239, 68, 68, 0.2)', text: '#f87171' },
     };

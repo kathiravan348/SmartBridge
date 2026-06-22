@@ -1,0 +1,521 @@
+File Name,Original Source Header,Mapped Target Schema,Confidence Score,Mapping Status
+File 1: Perfect Exact Matches,supplier id,supplier_id,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,supplier name,supplier_name,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,supplier alias,supplier_alias,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,supplier legal name,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,street address,street_address,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,city state,city_state,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,postal code,postal_code,90.9%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,country,country,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,phone number,phone_number,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,email address,email_address,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,tax id,tax_id,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,payment terms,payment_terms,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,payment method,payment_method,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,currency,currency,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total number of invoices,total_invoices,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total number of purchase orders,total_purchase_orders,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total number of payments paid,total_payments_paid,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total number of payments due,total_payments_due,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total number of payments open,total_payments_open,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,transaction count,transaction_count,76.9%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total amount of invoices,total_amount_invoices,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total amount of purchase orders,total_amount_purchase_orders,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total amount of payments paid,total_amount_payments_paid,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total amount of payments due,total_amount_payments_due,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,total amount of payments open,total_amount_payments_open,100.0%,✅ Successfully Mapped
+File 1: Perfect Exact Matches,annual target spend,annual_target_spend,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,SupplierId,supplier_id,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,SupplierName,supplier_name,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,SupplierAlias,supplier_alias,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,SupplierLegalName,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,StreetAddress,street_address,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,CityState,city_state,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,PostalCode,postal_code,90.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,Country,country,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,PhoneNumber,phone_number,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,EmailAddress,email_address,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TaxId,tax_id,90.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,PaymentTerms,payment_terms,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,PaymentMethod,payment_method,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,Currency,currency,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalInvoices,total_invoices,85.7%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalPurchaseOrders,total_purchase_orders,104.1%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalPaymentsPaid,total_payments_paid,87.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalPaymentsDue,total_payments_due,87.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalPaymentsOpen,total_payments_open,87.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,TransactionCount,transaction_count,76.9%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalAmountInvoices,total_amount_invoices,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalAmountPurchaseOrders,total_amount_purchase_orders,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalAmountPaymentsPaid,total_amount_payments_paid,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalAmountPaymentsDue,total_amount_payments_due,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,TotalAmountPaymentsOpen,total_amount_payments_open,100.0%,✅ Successfully Mapped
+File 2: Simple CamelCase,AnnualTargetSpend,annual_target_spend,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,vendor_id_number,supplier_id,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,vendor_org_name,supplier_name,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,vendor_dba_alias,supplier_alias,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,vendor_registered_name,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,street_location_address,street_address,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,town_and_province,city_state,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,zip_routing_code,postal_code,44.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,nation_statehood,country,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,telephone_contact_number,phone_number,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,contact_email_address,email_address,50.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,vat_tax_identifier,tax_id,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,net_credit_terms,payment_terms,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,mode_of_payment,payment_method,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,fx_tender_currency,currency,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,count_of_all_invoices,total_invoices,55.6%,✅ Successfully Mapped
+File 3: Heavy Underscores,qty_of_purchase_orders,total_purchase_orders,78.9%,✅ Successfully Mapped
+File 3: Heavy Underscores,settled_payments_tally,total_payments_paid,71.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,payable_payments_freq,total_payments_due,61.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,unresolved_payments_qty,total_payments_open,61.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,transfer_activity_count,transaction_count,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,sum_value_of_invoices,total_amount_invoices,100.0%,✅ Successfully Mapped
+File 3: Heavy Underscores,cost_of_purchase_orders,total_amount_purchase_orders,94.3%,✅ Successfully Mapped
+File 3: Heavy Underscores,remitted_payments_value,total_amount_payments_paid,88.8%,✅ Successfully Mapped
+File 3: Heavy Underscores,owed_payments_balance,total_amount_payments_due,88.8%,✅ Successfully Mapped
+File 3: Heavy Underscores,pending_payments_amount,total_amount_payments_open,88.8%,✅ Successfully Mapped
+File 3: Heavy Underscores,projected_yearly_spend,annual_target_spend,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,vendoridentifier,supplier_id,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,companytitle,supplier_name,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,dbanickname,supplier_alias,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,corporateentity,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,buildingroad,street_address,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,municipalityregion,city_state,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,pincode,postal_code,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,republic,country,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,mobilecell,phone_number,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,e-mailinbox,email_address,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,gsttin,tax_id,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,dueagreements,payment_terms,61.5%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,wirecheque,payment_method,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,ccymoney,currency,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,billingsum,total_invoices,85.7%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,requisitionsfreq,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,cleareddisbursedqty,total_payments_paid,97.6%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,scheduledupcomingmonies,total_payments_due,110.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,outstandingarrearsvolume,total_payments_open,97.6%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,movementrecord,transaction_count,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,billingtally,total_amount_invoices,61.7%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,requisitionscost,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,fulfilledclosedfunds,total_amount_payments_paid,100.0%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,unpaidunsettledprice,total_amount_payments_due,57.9%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,ytdforecastoutlay,annual_target_spend,84.5%,✅ Successfully Mapped
+File 4: Absolute Concatenation Nightmare,maturingexpectedcount,N/A,0.0%,❌ Failed to map
+File 5: Legacy ERP Export (Short abbreviations),SUPP_ID,supplier_id,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),SUPP_NAME,supplier_name,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),DBA,supplier_alias,80.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),LEG_NAME,supplier_legal_name,85.7%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),STR_ADDR,street_address,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),ZIP,postal_code,90.9%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),CTRY,country,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),TEL,phone_number,90.9%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),EMAIL,email_address,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),TIN,tax_id,90.9%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),TERMS,payment_terms,88.9%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),PAY_METH,payment_method,75.5%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),CCY,currency,100.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),INV_QTY,total_invoices,55.6%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),PO_QTY,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),PD_QTY,total_payments_paid,48.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),DUE_QTY,total_payments_due,48.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),OPN_QTY,total_payments_open,48.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),TXN_CNT,transaction_count,76.9%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),INV_AMT,total_amount_invoices,87.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),PO_AMT,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),PD_AMT,total_amount_payments_paid,74.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),DUE_AMT,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),OPN_AMT,total_amount_payments_open,74.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),ANN_SPEND,annual_target_spend,53.8%,✅ Successfully Mapped
+File 5: Legacy ERP Export (Short abbreviations),CITY_ST,N/A,0.0%,❌ Failed to map
+File 6: Excessive Noise Words,all business organization name details,supplier_name,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,official registered corporate entity data,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,hq location avenue and street details,street_address,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,municipality and territory details,city_state,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,area routing pin code data,postal_code,40.7%,✅ Successfully Mapped
+File 6: Excessive Noise Words,nation or republic information,country,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,dial contact fax mobile info,phone_number,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,e-mail inbox address details,email_address,90.9%,✅ Successfully Mapped
+File 6: Excessive Noise Words,ssn or ein tax id information,tax_id,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,net due days and credit conditions,payment_terms,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,ach or wire transfer mode way,payment_method,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,money or fx currency data,currency,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,gross count of all billing statements,total_invoices,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,total frequency of po requisitions,total_purchase_orders,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,tally of disbursed and cleared payments,total_payments_paid,110.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,payable monies for scheduled payments,total_payments_due,110.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,unresolved arrears volume,total_payments_open,97.6%,✅ Successfully Mapped
+File 6: Excessive Noise Words,movement activity record qty,transaction_count,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,cumulative sum of all invoice bills,total_amount_invoices,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,overall cost of all pos,total_amount_purchase_orders,71.7%,✅ Successfully Mapped
+File 6: Excessive Noise Words,aggregate funds of completed payments,total_amount_payments_paid,100.0%,✅ Successfully Mapped
+File 6: Excessive Noise Words,outstanding unpaid balance,total_amount_payments_due,57.9%,✅ Successfully Mapped
+File 6: Excessive Noise Words,planned 12-month expenditure goal,annual_target_spend,72.3%,✅ Successfully Mapped
+File 6: Excessive Noise Words,the supplier identification number for the record,N/A,0.0%,❌ Failed to map
+File 6: Excessive Noise Words,known as trading alias information,N/A,0.0%,❌ Failed to map
+File 6: Excessive Noise Words,upcoming expected payment frequency,N/A,0.0%,❌ Failed to map
+File 7: Plural vs Singular grammatical stress test,vendor id,supplier_id,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,vendor name,supplier_name,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,vendor alias,supplier_alias,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,vendor legal,supplier_legal_name,71.4%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,street,street_address,50.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,city state,city_state,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,zipcode,postal_code,90.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,nation,country,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,phone,phone_number,90.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,email,email_address,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,taxid,tax_id,90.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,term,payment_terms,88.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,method,payment_method,88.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,fx,currency,100.0%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,invoice,total_invoices,71.4%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,orders,total_purchase_orders,68.8%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payment settled,total_payments_paid,75.8%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payment payable,total_payments_due,75.8%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payment outstanding,total_payments_open,75.8%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,transaction,transaction_count,90.9%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,invoices,total_amount_invoices,65.2%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,order,total_amount_purchase_orders,66.6%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payments settled,total_amount_payments_paid,70.1%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payments payable,total_amount_payments_due,70.1%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,payments outstanding,total_amount_payments_open,70.1%,✅ Successfully Mapped
+File 7: Plural vs Singular grammatical stress test,annual target,annual_target_spend,92.3%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,payee ref,supplier_id,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,merchant enterprise,supplier_name,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,short name display,supplier_alias,69.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,tax name incorporated,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,line1 line2,street_address,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,suburb prefecture,city_state,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,postcode,postal_code,90.9%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,statehood,country,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,contact number,phone_number,90.9%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,mail,email_address,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,ein,tax_id,90.9%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,conditions of pay,payment_terms,75.5%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,channel type,payment_method,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,tender,currency,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,statements volume,total_invoices,65.6%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,pos tally,total_purchase_orders,62.6%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,closed freq,total_payments_paid,48.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,maturing qty,total_payments_due,48.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,pending volume,total_payments_open,48.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,txn trans,transaction_count,100.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,statements price,total_amount_invoices,87.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,pos spend,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,closed cost,total_amount_payments_paid,74.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,maturing value,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,pending amt,total_amount_payments_open,74.8%,✅ Successfully Mapped
+File 8: Foreign/Alternative Spellings,per year goal,annual_target_spend,92.3%,✅ Successfully Mapped
+File 9: Synonyms Only,biller account,supplier_id,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,org firm,supplier_name,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,display name,supplier_alias,80.0%,✅ Successfully Mapped
+File 9: Synonyms Only,registered entity,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,location apt,street_address,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,metro district,city_state,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,republic,country,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,mobile,phone_number,90.9%,✅ Successfully Mapped
+File 9: Synonyms Only,inbox,email_address,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,gst,tax_id,90.9%,✅ Successfully Mapped
+File 9: Synonyms Only,agreements,payment_terms,88.9%,✅ Successfully Mapped
+File 9: Synonyms Only,card,payment_method,88.9%,✅ Successfully Mapped
+File 9: Synonyms Only,money,currency,100.0%,✅ Successfully Mapped
+File 9: Synonyms Only,bills sum,total_invoices,85.7%,✅ Successfully Mapped
+File 9: Synonyms Only,requisitions qty,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 9: Synonyms Only,fulfilled sum,total_payments_paid,72.7%,✅ Successfully Mapped
+File 9: Synonyms Only,scheduled qty,total_payments_due,48.8%,✅ Successfully Mapped
+File 9: Synonyms Only,unsettled sum,total_payments_open,72.7%,✅ Successfully Mapped
+File 9: Synonyms Only,activity volume,transaction_count,76.9%,✅ Successfully Mapped
+File 9: Synonyms Only,bills count,total_amount_invoices,51.7%,✅ Successfully Mapped
+File 9: Synonyms Only,requisitions value,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 9: Synonyms Only,fulfilled count,total_amount_payments_paid,45.8%,✅ Successfully Mapped
+File 9: Synonyms Only,scheduled value,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 9: Synonyms Only,unsettled count,total_amount_payments_open,45.8%,✅ Successfully Mapped
+File 9: Synonyms Only,budget expenditure,annual_target_spend,42.3%,✅ Successfully Mapped
+File 9: Synonyms Only,routing code,N/A,0.0%,❌ Failed to map
+File 10: Completely Random Order + Noise,info supplier id data,supplier_id,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info name company data,supplier_name,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data alias vendor info,supplier_alias,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data legal corp info,supplier_legal_name,85.7%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info street hq data,street_address,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data city region info,city_state,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info zip pin data,postal_code,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data country nation info,country,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info phone cell data,phone_number,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data email mail info,email_address,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info tax ssn data,tax_id,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data terms net info,payment_terms,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info method wire data,payment_method,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data currency fx info,currency,100.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info invoices count data,total_invoices,55.6%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info orders qty data,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data paid payment sum info,total_payments_paid,87.9%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info due payment count data,total_payments_due,61.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info open payment tally data,total_payments_open,61.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info transaction count data,transaction_count,76.9%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data invoices amount info,total_amount_invoices,87.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data orders cost info,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,info paid payment qty data,total_amount_payments_paid,57.3%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data due payment value info,total_amount_payments_due,88.8%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data open payment balance info,total_amount_payments_open,88.8%,✅ Successfully Mapped
+File 10: Completely Random Order + Noise,data spend annual info,annual_target_spend,53.8%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,supplier id,supplier_id,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,supplier neme,supplier_name,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,supplier legel neme,supplier_legal_name,89.7%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,street eddress,street_address,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,city stete,city_state,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,cuuntry,country,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,phune number,phone_number,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,emeil eddress,email_address,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,peyment terms,payment_terms,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,peyment methud,payment_method,84.9%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,currency,currency,100.0%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,tutel number uf purchese urders,total_purchase_orders,51.6%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,tutel emuunt uf purchese urders,total_amount_purchase_orders,44.6%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,ennuel terget spend,annual_target_spend,49.3%,✅ Successfully Mapped
+File 11: Variant of File 1: Perfect Exact Matches,supplier elies,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,pustel cude,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tex id,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel number uf invuices,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel emuunt uf invuices,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel number uf peyments peid,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel emuunt uf peyments peid,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel number uf peyments due,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel emuunt uf peyments due,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel number uf peyments upen,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,tutel emuunt uf peyments upen,N/A,0.0%,❌ Failed to map
+File 11: Variant of File 1: Perfect Exact Matches,trensectiun cuunt,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,SupplierId,supplier_id,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,SupplierNeme,supplier_name,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,SupplierAlies,supplier_alias,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,SupplierLegelNeme,supplier_legal_name,89.7%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,StreetAddress,street_address,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,CityStete,city_state,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,Cuuntry,country,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,PhuneNumber,phone_number,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,EmeilAddress,email_address,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,TexId,tax_id,90.9%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,PeymentTerms,payment_terms,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,PeymentMethud,payment_method,84.9%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,Currency,currency,100.0%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,TutelPurcheseOrders,total_purchase_orders,61.7%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,TutelAmuuntPurcheseOrders,total_amount_purchase_orders,56.2%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,AnnuelTergetSpend,annual_target_spend,91.5%,✅ Successfully Mapped
+File 12: Variant of File 2: Simple CamelCase,PustelCude,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelInvuices,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelAmuuntInvuices,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelPeymentsPeid,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelAmuuntPeymentsPeid,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelPeymentsDue,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelAmuuntPeymentsDue,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelPeymentsOpen,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TutelAmuuntPeymentsOpen,N/A,0.0%,❌ Failed to map
+File 12: Variant of File 2: Simple CamelCase,TrensectiunCuunt,N/A,0.0%,❌ Failed to map
+File 13: Variant of File 3: Heavy Underscores,vendur_id_number,supplier_id,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,vendur_urg_neme,supplier_name,78.9%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,vendur_registered_neme,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,street_lucetiun_eddress,street_address,62.5%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,tuwn_end_pruvince,city_state,90.9%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,zip_ruuting_cude,postal_code,44.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,telephune_cuntect_number,phone_number,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,cuntect_emeil_eddress,email_address,71.4%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,net_credit_terms,payment_terms,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,mude_uf_peyment,payment_method,84.9%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,fx_tender_currency,currency,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,qty_uf_purchese_urders,total_purchase_orders,71.4%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,peyeble_peyments_freq,total_payments_due,61.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,unresulved_peyments_qty,total_payments_open,61.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,trensfer_ectivity_cuunt,transaction_count,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,sum_velue_uf_invuices,total_amount_invoices,65.7%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,cust_uf_purchese_urders,total_amount_purchase_orders,84.7%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,remitted_peyments_velue,total_amount_payments_paid,88.8%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,uwed_peyments_belence,total_amount_payments_due,88.8%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,pending_peyments_emuunt,total_amount_payments_open,67.3%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,prujected_yeerly_spend,annual_target_spend,100.0%,✅ Successfully Mapped
+File 13: Variant of File 3: Heavy Underscores,vendur_dbe_elies,N/A,0.0%,❌ Failed to map
+File 13: Variant of File 3: Heavy Underscores,netiun_stetehuud,N/A,0.0%,❌ Failed to map
+File 13: Variant of File 3: Heavy Underscores,vet_tex_identifier,N/A,0.0%,❌ Failed to map
+File 13: Variant of File 3: Heavy Underscores,cuunt_uf_ell_invuices,N/A,0.0%,❌ Failed to map
+File 13: Variant of File 3: Heavy Underscores,settled_peyments_telly,N/A,0.0%,❌ Failed to map
+File 14: Variant of File 4: Absolute Concatenation Nightmare,venduridentifier,supplier_id,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,cumpenytitle,supplier_name,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,dbenickneme,supplier_alias,69.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,curpureteentity,supplier_legal_name,76.9%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,buildingrued,street_address,45.5%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,municipelityregiun,city_state,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,pincude,postal_code,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,republic,country,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,mubilecell,phone_number,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,e-meilinbux,email_address,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,gsttin,tax_id,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,dueegreements,payment_terms,61.5%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,wirecheque,payment_method,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,ccymuney,currency,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,billingsum,total_invoices,85.7%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,requisitiunsfreq,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,cleereddisbursedqty,total_payments_paid,97.6%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,scheduledupcumingmunies,total_payments_due,110.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,uutstendingerreersvulume,total_payments_open,97.6%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,muvementrecurd,transaction_count,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,requisitiunscust,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,fulfilledclusedfunds,total_amount_payments_paid,100.0%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,unpeidunsettledprice,total_amount_payments_due,57.9%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,ytdfurecestuutley,annual_target_spend,84.5%,✅ Successfully Mapped
+File 14: Variant of File 4: Absolute Concatenation Nightmare,billingtelly,N/A,0.0%,❌ Failed to map
+File 14: Variant of File 4: Absolute Concatenation Nightmare,meturingexpectedcuunt,N/A,0.0%,❌ Failed to map
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),SUPP_ID,supplier_id,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),SUPP_NAME,supplier_name,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),DBA,supplier_alias,80.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),LEG_NAME,supplier_legal_name,85.7%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),STR_ADDR,street_address,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),ZIP,postal_code,90.9%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),CTRY,country,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),TEL,phone_number,90.9%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),EMAIL,email_address,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),TIN,tax_id,90.9%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),TERMS,payment_terms,88.9%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),PAY_METH,payment_method,75.5%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),CCY,currency,100.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),INV_QTY,total_invoices,55.6%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),PO_QTY,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),PD_QTY,total_payments_paid,48.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),DUE_QTY,total_payments_due,48.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),OPN_QTY,total_payments_open,48.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),TXN_CNT,transaction_count,76.9%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),INV_AMT,total_amount_invoices,87.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),PO_AMT,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),PD_AMT,total_amount_payments_paid,74.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),DUE_AMT,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),OPN_AMT,total_amount_payments_open,74.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),ANN_SPEND,annual_target_spend,53.8%,✅ Successfully Mapped
+File 15: Variant of File 5: Legacy ERP Export (Short abbreviations),CITY_ST,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,ufficiel registered curpurete entity dete,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,hq lucetiun evenue end street deteils,street_address,55.6%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,municipelity end territury deteils,city_state,90.9%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,diel cuntect fex mubile infu,phone_number,100.0%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,e-meil inbux eddress deteils,email_address,90.9%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,ssn ur ein tex id infurmetiun,tax_id,72.4%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,net due deys end credit cunditiuns,payment_terms,87.9%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,ech ur wire trensfer mude wey,payment_method,73.4%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,muney ur fx currency dete,currency,100.0%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,cumuletive sum uf ell invuice bills,total_invoices,57.1%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,telly uf disbursed end cleered peyments,total_payments_paid,56.4%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,unresulved erreers vulume,total_payments_open,97.6%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,muvement ectivity recurd qty,transaction_count,100.0%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,gruss cuunt uf ell billing stetements,total_amount_invoices,50.8%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,eggregete funds uf cumpleted peyments,total_amount_payments_paid,81.7%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,peyeble munies fur scheduled peyments,total_amount_payments_due,100.0%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,uutstending unpeid belence,total_amount_payments_open,57.9%,✅ Successfully Mapped
+File 16: Variant of File 6: Excessive Noise Words,the supplier identificetiun number fur the recurd,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,ell business urgenizetiun neme deteils,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,knuwn es treding elies infurmetiun,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,eree ruuting pin cude dete,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,netiun ur republic infurmetiun,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,tutel frequency uf pu requisitiuns,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,uverell cust uf ell pus,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,upcuming expected peyment frequency,N/A,0.0%,❌ Failed to map
+File 16: Variant of File 6: Excessive Noise Words,plenned 12-munth expenditure guel,N/A,0.0%,❌ Failed to map
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,vendur id,supplier_id,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,vendur neme,supplier_name,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,vendur legel,supplier_legal_name,64.1%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,street,street_address,50.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,city stete,city_state,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,zipcude,postal_code,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,phune,phone_number,90.9%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,emeil,email_address,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,texid,tax_id,90.9%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,term,payment_terms,88.9%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,methud,payment_method,75.5%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,fx,currency,100.0%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,invuices,total_invoices,65.6%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,urders,total_purchase_orders,68.8%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyment settled,total_payments_paid,75.8%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyment peyeble,total_payments_due,75.8%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyment uutstending,total_payments_open,75.8%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,trensectiun,transaction_count,43.5%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,invuice,total_amount_invoices,61.7%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyments settled,total_amount_payments_paid,70.1%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyments peyeble,total_amount_payments_due,70.1%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,peyments uutstending,total_amount_payments_open,70.1%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,ennuel terget,annual_target_spend,42.3%,✅ Successfully Mapped
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,vendur elies,N/A,0.0%,❌ Failed to map
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,netiun,N/A,0.0%,❌ Failed to map
+File 17: Variant of File 7: Plural vs Singular grammatical stress test,urder,N/A,0.0%,❌ Failed to map
+File 18: Variant of File 8: Foreign/Alternative Spellings,peyee ref,supplier_id,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,merchent enterprise,supplier_name,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,tex neme incurpureted,supplier_legal_name,76.9%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,line1 line2,street_address,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,suburb prefecture,city_state,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,pustcude,postal_code,90.9%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,pus telly,phone_number,66.7%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,meil,email_address,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,ein,tax_id,90.9%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,cunditiuns uf pey,payment_terms,65.6%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,chennel type,payment_method,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,tender,currency,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,stetements vulume,total_invoices,65.6%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,clused freq,total_payments_paid,48.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,meturing qty,total_payments_due,48.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,pending emt,total_payments_open,48.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,txn trens,transaction_count,100.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,stetements price,total_amount_invoices,87.0%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,clused cust,total_amount_payments_paid,74.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,meturing velue,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,pending vulume,total_amount_payments_open,55.8%,✅ Successfully Mapped
+File 18: Variant of File 8: Foreign/Alternative Spellings,shurt neme displey,N/A,0.0%,❌ Failed to map
+File 18: Variant of File 8: Foreign/Alternative Spellings,stetehuud,N/A,0.0%,❌ Failed to map
+File 18: Variant of File 8: Foreign/Alternative Spellings,cuntect number,N/A,0.0%,❌ Failed to map
+File 18: Variant of File 8: Foreign/Alternative Spellings,pus spend,N/A,0.0%,❌ Failed to map
+File 18: Variant of File 8: Foreign/Alternative Spellings,per yeer guel,N/A,0.0%,❌ Failed to map
+File 19: Variant of File 9: Synonyms Only,biller eccuunt,supplier_id,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,urg firm,supplier_name,52.6%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,registered entity,supplier_legal_name,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,metru district,city_state,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,republic,country,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,mubile,phone_number,90.9%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,inbux,email_address,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,gst,tax_id,90.9%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,egreements,payment_terms,88.9%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,cerd,payment_method,88.9%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,muney,currency,100.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,bills sum,total_invoices,85.7%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,requisitiuns qty,total_purchase_orders,52.6%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,fulfilled sum,total_payments_paid,72.7%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,scheduled qty,total_payments_due,48.8%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,unsettled sum,total_payments_open,72.7%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,ectivity vulume,transaction_count,76.9%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,bills cuunt,total_amount_invoices,51.7%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,requisitiuns velue,total_amount_purchase_orders,66.0%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,fulfilled cuunt,total_amount_payments_paid,55.8%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,scheduled velue,total_amount_payments_due,74.8%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,unsettled cuunt,total_amount_payments_open,55.8%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,budget expenditure,annual_target_spend,42.3%,✅ Successfully Mapped
+File 19: Variant of File 9: Synonyms Only,displey neme,N/A,0.0%,❌ Failed to map
+File 19: Variant of File 9: Synonyms Only,lucetiun ept,N/A,0.0%,❌ Failed to map
+File 19: Variant of File 9: Synonyms Only,ruuting cude,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,infu supplier id dete,supplier_id,63.6%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu neme cumpeny dete,supplier_name,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete legel curp infu,supplier_legal_name,69.8%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu street hq dete,street_address,90.9%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete city regiun infu,city_state,90.9%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu zip pin dete,postal_code,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete cuuntry netiun infu,country,41.7%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu phune cell dete,phone_number,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete emeil meil infu,email_address,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu tex ssn dete,tax_id,66.7%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete terms net infu,payment_terms,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu methud wire dete,payment_method,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete currency fx infu,currency,100.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu urders qty dete,total_purchase_orders,47.6%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete peid peyment sum infu,total_payments_paid,70.7%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu due peyment cuunt dete,total_payments_due,51.0%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete urders cust infu,total_amount_purchase_orders,59.3%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,infu peid peyment qty dete,total_amount_payments_paid,48.4%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete due peyment velue infu,total_amount_payments_due,72.5%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete upen peyment belence infu,total_amount_payments_open,72.5%,✅ Successfully Mapped
+File 20: Variant of File 10: Completely Random Order + Noise,dete elies vendur infu,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,infu invuices cuunt dete,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,dete invuices emuunt infu,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,infu upen peyment telly dete,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,infu trensectiun cuunt dete,N/A,0.0%,❌ Failed to map
+File 20: Variant of File 10: Completely Random Order + Noise,dete spend ennuel infu,N/A,0.0%,❌ Failed to map

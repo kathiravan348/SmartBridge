@@ -1,0 +1,422 @@
+{
+    "matching_engine_config": {
+        "nlp_config": {
+            "stop_words": [
+                "of",
+                "the",
+                "all",
+                "for",
+                "and",
+                "to",
+                "is",
+                "a",
+                "an",
+                "in",
+                "on",
+                "at",
+                "by",
+                "with",
+                "details",
+                "info",
+                "information",
+                "data"
+            ],
+            "base_tokens": {
+                "supplier": [
+                    "vendor",
+                    "merchant",
+                    "payee",
+                    "biller",
+                    "creditor",
+                    "provider",
+                    "contractor",
+                    "thirdparty",
+                    "partner",
+                    "supp"
+                ],
+                "name": [
+                    "business",
+                    "company",
+                    "enterprise",
+                    "corp",
+                    "title",
+                    "organization",
+                    "org",
+                    "firm",
+                    "firstname",
+                    "lastname",
+                    "fullname"
+                ],
+                "alias": [
+                    "dba",
+                    "doing business as",
+                    "trading as",
+                    "trading alias",
+                    "known as",
+                    "short name",
+                    "display name",
+                    "nickname",
+                    "dba"
+                ],
+                "legal": [
+                    "registered",
+                    "official",
+                    "corporate",
+                    "tax name",
+                    "entity",
+                    "incorporated",
+                    "leg"
+                ],
+                "id": [
+                    "identifier",
+                    "identification",
+                    "ident",
+                    "number",
+                    "num",
+                    "#",
+                    "code",
+                    "reference",
+                    "ref",
+                    "key",
+                    "account",
+                    "taxid"
+                ],
+                "street": [
+                    "address",
+                    "line1",
+                    "line2",
+                    "building",
+                    "road",
+                    "location",
+                    "hq",
+                    "ave",
+                    "st",
+                    "suite",
+                    "apt",
+                    "str",
+                    "addr"
+                ],
+                "city": [
+                    "town",
+                    "municipality",
+                    "suburb",
+                    "metro"
+                ],
+                "state": [
+                    "province",
+                    "region",
+                    "territory",
+                    "county",
+                    "prefecture",
+                    "district"
+                ],
+                "postal": [
+                    "zip",
+                    "zipcode",
+                    "postcode",
+                    "pin",
+                    "postal code",
+                    "routing code",
+                    "area code",
+                    "zipcode",
+                    "postcode"
+                ],
+                "country": [
+                    "nation",
+                    "republic",
+                    "statehood",
+                    "ctry"
+                ],
+                "phone": [
+                    "telephone",
+                    "cell",
+                    "mobile",
+                    "contact number",
+                    "tel",
+                    "ph",
+                    "fax",
+                    "dial",
+                    "contact"
+                ],
+                "email": [
+                    "email",
+                    "emailaddress",
+                    "email address",
+                    "e-mail",
+                    "mail",
+                    "inbox",
+                    "emailaddress"
+                ],
+                "tax": [
+                    "vat",
+                    "gst",
+                    "tin",
+                    "ein",
+                    "ssn",
+                    "taxid"
+                ],
+                "terms": [
+                    "net",
+                    "due days",
+                    "terms of pay",
+                    "credit terms",
+                    "agreements",
+                    "conditions"
+                ],
+                "method": [
+                    "mode",
+                    "type",
+                    "channel",
+                    "way",
+                    "wire",
+                    "ach",
+                    "check",
+                    "cheque",
+                    "card",
+                    "meth"
+                ],
+                "currency": [
+                    "curr",
+                    "ccy",
+                    "money",
+                    "fx",
+                    "tender"
+                ],
+                "number": [
+                    "count",
+                    "qty",
+                    "quantity",
+                    "volume",
+                    "tally",
+                    "freq",
+                    "frequency",
+                    "frequency",
+                    "qty",
+                    "count",
+                    "sum"
+                ],
+                "total": [
+                    "sum",
+                    "overall",
+                    "aggregate",
+                    "final",
+                    "gross",
+                    "cumulative"
+                ],
+                "amount": [
+                    "amt",
+                    "value",
+                    "cost",
+                    "price",
+                    "spend",
+                    "balance",
+                    "funds",
+                    "monies"
+                ],
+                "invoices": [
+                    "inv",
+                    "invoice",
+                    "bill",
+                    "bills",
+                    "billing",
+                    "statements"
+                ],
+                "purchase orders": [
+                    "po",
+                    "orders",
+                    "pos",
+                    "requisitions"
+                ],
+                "paid": [
+                    "settled",
+                    "cleared",
+                    "remitted",
+                    "disbursed",
+                    "completed",
+                    "closed",
+                    "fulfilled",
+                    "pd"
+                ],
+                "due": [
+                    "payable",
+                    "expected",
+                    "scheduled",
+                    "upcoming",
+                    "maturing",
+                    "owed",
+                    "unpaid",
+                    "unsettled",
+                    "scheduled",
+                    "maturing",
+                    "upcoming"
+                ],
+                "open": [
+                    "outstanding",
+                    "pending",
+                    "unresolved",
+                    "arrears",
+                    "unsettled",
+                    "pending"
+                ],
+                "transaction": [
+                    "txn",
+                    "trans",
+                    "transfer",
+                    "activity",
+                    "movement",
+                    "record"
+                ],
+                "payment": [
+                    "payments"
+                ],
+                "annual": [
+                    "yearly",
+                    "ytd",
+                    "annualized",
+                    "12-month",
+                    "annum",
+                    "per year",
+                    "ann"
+                ],
+                "target": [
+                    "projected",
+                    "budget",
+                    "goal",
+                    "expected",
+                    "forecast",
+                    "planned"
+                ],
+                "spend": [
+                    "expenditure",
+                    "spending",
+                    "expense",
+                    "outlay",
+                    "purchases"
+                ]
+            }
+        },
+        "target_signatures": {
+            "Supplier ID": [
+                "supplier",
+                "id"
+            ],
+            "Supplier Name": [
+                "supplier",
+                "name"
+            ],
+            "Supplier Alias": [
+                "supplier",
+                "alias"
+            ],
+            "Supplier Legal name": [
+                "supplier",
+                "legal",
+                "name"
+            ],
+            "Street Address": [
+                "street",
+                "address"
+            ],
+            "City State": [
+                "city",
+                "state"
+            ],
+            "Postal Code": [
+                "postal",
+                "code"
+            ],
+            "Country": [
+                "country"
+            ],
+            "Phone Number": [
+                "phone",
+                "number"
+            ],
+            "Email Address": [
+                "email"
+            ],
+            "Tax Id": [
+                "tax",
+                "id"
+            ],
+            "Payment Terms": [
+                "payment",
+                "terms"
+            ],
+            "Payment Method": [
+                "payment",
+                "method"
+            ],
+            "Currency": [
+                "currency"
+            ],
+            "Total Number of Invoices": [
+                "total",
+                "number",
+                "invoices"
+            ],
+            "Total Number of Purchase Orders": [
+                "total",
+                "number",
+                "purchase",
+                "orders"
+            ],
+            "Total Number of Payments Paid": [
+                "total",
+                "number",
+                "payment",
+                "paid"
+            ],
+            "Total Number of Payments Due": [
+                "total",
+                "number",
+                "payment",
+                "due"
+            ],
+            "Total Number of Payments Open": [
+                "total",
+                "number",
+                "payment",
+                "open"
+            ],
+            "Transaction Count": [
+                "transaction",
+                "number"
+            ],
+            "Total Amount of Invoices": [
+                "total",
+                "amount",
+                "invoices"
+            ],
+            "Total Amount of Purchase Orders": [
+                "total",
+                "amount",
+                "purchase",
+                "orders"
+            ],
+            "Total Amount of Payments Paid": [
+                "total",
+                "amount",
+                "payment",
+                "paid"
+            ],
+            "Total Amount of Payments Due": [
+                "total",
+                "amount",
+                "payment",
+                "due"
+            ],
+            "Total Amount of Payments Open": [
+                "total",
+                "amount",
+                "payment",
+                "open"
+            ],
+            "Annual Target Spend": [
+                "annual",
+                "target",
+                "spend"
+            ]
+        }
+    }
+}
